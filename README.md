@@ -1,4 +1,6 @@
 # Maximum likelihood Toeplitz covariance estimation
+This repository provides an implementation of Newton's method for maximum likelihood estimation of a covariance matrix that is known to be Toeplitz.
+The method is described in [...] and uses BLAS and LAPACK for linear algebra operations and FFTW3 to compute discrete Fourier transforms. 
 
 
 
