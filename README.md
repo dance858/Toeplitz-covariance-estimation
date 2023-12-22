@@ -9,7 +9,7 @@ $$
 \end{equation*}
 $$
 
-Here, \(R\) is the variable, and \(S\) is the sample covariance. This repository provides an implementation of Newton's method for solving this problem. For more details, see our paper XXX.
+
 
 
 ## Installation
