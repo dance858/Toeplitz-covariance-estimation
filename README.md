@@ -2,10 +2,6 @@
 The maximum likelihood estimate of a covariance matrix that is known to be Toeplitz can be found by solving the problem 
 $$\begin{equation*} \begin{array}{ll} \text{minimize} & \textbf{log det } R + \textbf{Tr} (R^{-1} S) \\ \text{subject to} & R \text{ being Toeplitz}  \end{array}  \end{equation*},$$
 
-
-
-
-
 ## Installation
 
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
