@@ -1,7 +1,7 @@
 # Maximum likelihood Toeplitz covariance estimation
 This repository hosts an implementation of Newton's method for solving the maximum likelihood estimation problem of a covariance matrix that is known to be Toeplitz: XXX
 For a description of the method, see XXX. This sentence uses `$` delimiters to show math inline:  $\sqrt{3x-1}+(1+x)^2$ This sentence uses $\` and \`$ delimiters to show math inline:  $`\sqrt{3x-1}+(1+x)^2`$
-$$ \text{minimize } \textbf{log det } R + \textbf{Tr}(R^{-1} S) 1$$
+$$\text{minimize } \textbf{log det } R + \textbf{Tr}(R^{-1} S)$$
 
 ## Installation
 
