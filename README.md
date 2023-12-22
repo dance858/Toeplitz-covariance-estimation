@@ -1,7 +1,7 @@
 # Maximum likelihood Toeplitz covariance estimation
 The maximum likelihood estimate of a covariance matrix that is known to be Toeplitz can be found by solving the problem
 
-$$\begin{equation*} \begin{array}{ll} \text{minimize} & \text{log det}  (S) + \text{Tr} (S Q) + \alpha \left\lVert S\right\rVert_1 \end{array}  \end{equation*},$$
+$$\begin{equation*} \begin{array}{ll} \text{minimize} & \textbf{log det}  (R) + \textbf{Tr} (R^{-1} S) \end{array}  \end{equation*},$$
 
 ## Installation
 
