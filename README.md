@@ -17,4 +17,14 @@
 
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
 
-## M
+## Citing
+If you find this repository useful, consider giving it a star.
+If you wish to cite our work, please use the following BibTex entry.
+
+```
+@article{CederbergXXX,
+  author  = {Daniel Cederberg},
+  title   = {XXX},
+  journal = {XXX},
+  year    = {XXX},
+}
