@@ -6,7 +6,7 @@
 
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
 
-### Building from source
+### Building from source <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/C/C-original.svg" height="20"/> 
 
 
 ## Examples
