@@ -1,6 +1,7 @@
 # Maximum likelihood Toeplitz covariance estimation
-This repository is an implementation of Newton's method for solving the maximum likelihood estimation problem of a covariance matrix that is known to be Toeplitz: XXX
-For a description of the method, see XXX. 
+This repository hosts an implementation of Newton's method for solving the maximum likelihood estimation problem of a covariance matrix that is known to be Toeplitz: XXX
+For a description of the method, see XXX. This sentence uses `$` delimiters to show math inline:  $\sqrt{3x-1}+(1+x)^2$ This sentence uses $\` and \`$ delimiters to show math inline:  $`\sqrt{3x-1}+(1+x)^2`$
+$$\left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right)$$
 
 ## Installation
 
