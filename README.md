@@ -1,6 +1,6 @@
 # Maximum likelihood Toeplitz covariance estimation
-The maximum likelihood estimate of a covariance matrix that is known to be Toeplitz can be found by solving the problem 
-$$\begin{equation*} \begin{array}{ll} \text{minimize} & \text{log det}  (S) + \text{Tr} (S Q) + \alpha \left\lVert S\right\rVert_1 \end{array}  \end{equation*},$$
+This repository is an implementation of Newton's method for solving the maximum likelihood estimation problem of a covariance matrix that is known to be Toeplitz: XXX
+For a description of the method, see XXX. 
 
 ## Installation
 
