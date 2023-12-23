@@ -1,5 +1,5 @@
 # Maximum likelihood Toeplitz covariance estimation
-This repository hosts an implementation of Newton's method for solving the maximum likelihood estimation problem of a covariance matrix that is known to be Toeplitz:
+__Clarabel.jl__ is a Julia implementation of an interior point numerical solver for convex optimization problems using a novel homogeneous embedding.  Clarabel.jl solves the following problem:
 
 $$
 \begin{array}{r}
@@ -8,7 +8,16 @@ $$
         & s \in \mathcal{K}
 \end{array}
 $$
-For a description of the method, see XXX. 
+
+with decision variables
+$x \in \mathbb{R}^n$,
+$s \in \mathbb{R}^m$
+and data matrices
+$P=P^\top \succeq 0$,
+$q \in \mathbb{R}^n$,
+$A \in \mathbb{R}^{m \times n}$, and
+$b \in \mathbb{R}^m$.
+The convex set $\mathcal{K}$ is a composition of convex cones.
 
 ## Installation
 
