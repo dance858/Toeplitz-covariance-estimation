@@ -1,11 +1,10 @@
 # Maximum likelihood Toeplitz covariance estimation
-This repository hosts an implementation of Newton's method for solving the maximum likelihood estimation problem of a covariance matrix that is known to be Toeplitz:
+This repository hosts an implementation of Newton's method for solving the maximum likelihood estimation problem for a covariance matrix that is known to be Toeplitz:
 
 $$
 \begin{array}{r}
 \text{minimize} & \frac{1}{2}x^T P x + q^T x\\\\[2ex]
-\text{subject to} & Ax + s = b \\\\[1ex]
-        & s \in \mathcal{K}
+\text{subject to} & R \text{ being Toeplitz}
 \end{array}
 $$
 
