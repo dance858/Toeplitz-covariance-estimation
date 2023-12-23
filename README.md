@@ -1,5 +1,5 @@
 # Maximum likelihood Toeplitz covariance estimation
-__Clarabel.jl__ is a Julia implementation of an interior point numerical solver for convex optimization problems using a novel homogeneous embedding.  Clarabel.jl solves the following problem:
+This repository hosts an implementation of Newton's method for solving the maximum likelihood estimation problem of a covariance matrix that is known to be Toeplitz:
 
 $$
 \begin{array}{r}
