@@ -3,7 +3,7 @@ This repository hosts an implementation of Newton's method for solving the maxim
 
 $$
 \begin{array}{r}
-\text{minimize} & \frac{1}{2}x^T P x + q^T x\\\\[2ex]
+\text{minimize} & \textbf{log det } R + \textbf{Tr}(R^{-1} S)\\\\[2ex]
 \text{subject to} & R \text{ being Toeplitz}
 \end{array}
 $$
