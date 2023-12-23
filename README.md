@@ -24,10 +24,20 @@ $S \in \mathbf{H}^{n+1}.$ Here $\mathbf{H}^{n+1}$ is the space of Hermitian matr
 
 
 ## Examples
+In this example we show how the maximum-likelihood Toeplitz covariance estimate can be used to enhance the performance of the multiple-signal classification algorithm (MUSIC) for direction-of-arrival estimation.
 
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
-
+Running this code produces the following output:
+```
+Test
+```
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
+
+Running this code produces the following output:
+```
+Test
+```
+
 
 ## Citing
 If you find this repository useful, please consider giving it a star.
