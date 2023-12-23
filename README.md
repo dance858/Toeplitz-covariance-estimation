@@ -11,7 +11,7 @@ $$
 with decision variable
 $R \in \mathbf{H}^{n+1}$
 and problem data
-$S \in \mathbf{H}^{n+1}.$ Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method and possible applications can be found in the paper XXX.
+$S \in \mathbf{H}^{n+1}.$ Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method, which we refer to as \texttt{NML}, and possible applications can be found in the paper XXX.
 
 ## Installation
 
@@ -20,8 +20,8 @@ $S \in \mathbf{H}^{n+1}.$ Here $\mathbf{H}^{n+1}$ is the space of Hermitian matr
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
 
 ### Building from source <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" height="20"/>
-          
-
+\texttt{NML} is written in C and uses [`BLAS`](https://www.netlib.org/blas/) and [`LAPACK`](https://www.netlib.org/lapack/lapacke.html) for linear algebra operations, 
+and [`FFTW3`](https://www.fftw.org/) to compute fast Fourier transforms. After having installed these packages you can build \texttt{NML} using the provided CMake configuration.
 
 ## Examples
 In this example we show how the maximum-likelihood Toeplitz covariance estimate can be used to enhance the performance of the multiple-signal classification algorithm (MUSIC) for direction-of-arrival estimation.
