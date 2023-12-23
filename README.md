@@ -9,9 +9,9 @@ $$
 $$
 
 with decision variable
-$R \in \mathbb{H}^{n+1}$
+$R \in \mathbf{H}^{n+1}$
 and problem data
-$S \in \mathbb{H}^{n+1}_{++}.$
+$S \in \mathbf{H}^{n+1}.$ Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$.
 
 ## Installation
 
