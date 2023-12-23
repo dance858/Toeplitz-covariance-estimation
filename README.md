@@ -34,7 +34,7 @@ Test
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
 The MATLAB interface exposes the function
 ```
-[output] = NML(input).
+[output] = NML(input)
 ```
 
 An example of how it is called is given in `example1.m` in the `examples`-folder. Running `example1.m` results in the following output:
