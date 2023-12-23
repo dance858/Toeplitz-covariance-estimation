@@ -3,7 +3,7 @@ This repository hosts an implementation of Newton's method for solving the maxim
 
 $$
 \begin{array}{r}
-\text{minimize} & \textbf{log det } R + \textbf{Tr}(R^{-1} S)\\\\
+\text{minimize} & \textbf{log det } R + \textbf{Tr}(R^{-1} S)\\
 \text{subject to} & R \text{ being Toeplitz}
 \end{array}
 $$
