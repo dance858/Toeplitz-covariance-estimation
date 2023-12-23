@@ -9,10 +9,9 @@ $$
 $$
 
 with decision variable
-$R$
-and where
-$S$
-is the sample covariance matrix.
+$R \in \mathbb{H}^{n+1}$
+and problem data
+$S \in \mathbb{H}^{n+1}_{++}.$
 
 ## Installation
 
