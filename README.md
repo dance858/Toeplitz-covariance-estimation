@@ -16,7 +16,14 @@ $S \in \mathbf{H}^{n+1}.$ Here $\mathbf{H}^{n+1}$ is the space of Hermitian matr
 ## Installation
 
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
+The MATLAB installation assumes that [`CBLAS`](https://www.netlib.org/blas/#_cblas), [`LAPACKE`](https://www.netlib.org/lapack/lapacke.html) and [`FFTW3`](https://www.fftw.org/) are installed on your system. After having installed these dependencies `NML` can be built with:
+```
+git clone https://github.com/dance858/Toeplitz-covariance-estimation.git
+make -f make_matlab
+```
+This will create a mex-file. Remember to include the path to the mex-file where you want to use it.
 
+https://www.netlib.org/blas/#_cblas
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
 ```
 pip install NML
