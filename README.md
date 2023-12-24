@@ -42,7 +42,7 @@ The MATLAB interface exposes the function
 [x, y, grad_norm, obj, solve_time, iter] = NML(real_Z, imag_Z, n, K)
 ```
 Here the output and arguments are defined as follows.
-* `x` and `y` - The real and imaginary parts of the maximum likelihood Toeplitz estimate. The corresponding covariance matrix can be reconstructed with       toeplitz([2*x(1); x(2:end) + 1i*y]);
+* `x` and `y` - The real and imaginary parts of the maximum likelihood Toeplitz estimate. The corresponding covariance matrix can be reconstructed with       `toeplitz([2*x(1); x(2:end) + 1i*y])`;
 * `grad_norm` - Euclidean norm of the gradient
 * `obj` - objective value
 * `solve_time` - solve time in seconds
