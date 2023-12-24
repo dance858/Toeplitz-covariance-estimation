@@ -71,9 +71,9 @@ This figure shows the mean-squared estimation error for MUSIC when used with the
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" /> 
 The Python interface exposes the function
 ```
-[output] = NML(input)
+[x, y, grad_norm, obj, solve_time, iter] = NML(real_Z, imag_Z, n, K, verbose, tol, beta, alpha, max_iter)
 ```
-An example of how it is called is given in `demo.py`.
+The parameters are defined as in the MATLAB interface. An example of how this function is called is given in `demo.py`.
 
 ## Citing
 If you find this repository useful, please consider giving it a star.
