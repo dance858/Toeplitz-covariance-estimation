@@ -37,12 +37,9 @@ The MATLAB interface exposes the function
 [output] = NML(input)
 ```
 
-An example of how it is called is given in `demo.m` in the `examples`-folder. Running `demo.m` results in the following output:
+An example of how it is called is given in `demo.m` in the `examples`-folder. Running `demo.m` results in the following figure:
 
-```
-Test
-```
-
+![](https://github.com/cvxgrp/pymde/blob/main/images/mnist_std.png?raw=true)
 
 ## Citing
 If you find this repository useful, please consider giving it a star.
