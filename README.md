@@ -11,7 +11,7 @@ $$
 with decision variable
 $R \in \mathbf{H}^{n+1}$
 and problem data
-$S \in \mathbf{H}^{n+1}.$ Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method, which we refer to as `NML`, and possible applications can be found in the paper XXX.
+$S \in \mathbf{H}^{n+1}.$ Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method, which we refer to as `NML`, along with possible applications can be found in our paper XXX.
 
 ## Installation
 
@@ -37,7 +37,7 @@ The MATLAB interface exposes the function
 
 An example of how it is called is given in `demo.m` in the `examples`-folder. Running `demo.m` results in the following figure:
 
-$\hspace{4cm}$ ![](https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/demo.jpg)
+$\hspace{3.5cm}$ ![](https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/demo.jpg)
 
 This figure shows the mean-squared estimation error for MUSIC when used with the sample covariance matrix (labelled with `MSE_SC`) and the maximum likelihood estimate (labelled with `MSE_NML`), versus the number of measurements $K$. For more explanations and details on the dotted lines (which represent Cramér-Rao bounds) we refer to Section 4 of our paper. 
 
