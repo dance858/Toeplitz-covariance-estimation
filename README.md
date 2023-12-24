@@ -15,9 +15,9 @@ $S \in \mathbf{H}^{n+1}.$ Here $\mathbf{H}^{n+1}$ is the space of Hermitian matr
 
 ## Installation
 
-### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
-
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
+
+### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
 
 ### Building from source <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" height="20"/>
 `NML` is written in C and uses [`BLAS`](https://www.netlib.org/blas/) and [`LAPACK`](https://www.netlib.org/lapack/lapacke.html) for linear algebra operations, 
@@ -26,11 +26,6 @@ and [`FFTW3`](https://www.fftw.org/) to compute fast Fourier transforms. After h
 ## Examples
 In this example we show how the maximum-likelihood Toeplitz covariance estimate can be used to enhance the performance of the multiple-signal classification algorithm (MUSIC) for direction-of-arrival estimation.
 
-### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" /> and MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
-Running this code produces the following output:
-```
-Test
-```
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
 The MATLAB interface exposes the function
 ```
@@ -40,6 +35,13 @@ The MATLAB interface exposes the function
 An example of how it is called is given in `demo.m` in the `examples`-folder. Running `demo.m` results in the following figure:
 
 ![](https://github.com/cvxgrp/pymde/blob/main/images/mnist_std.png?raw=true)
+
+### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" /> 
+The Python interface exposes the function
+```
+[output] = NML(input)
+```
+An example of how it is called is given in `demo.py`.
 
 ## Citing
 If you find this repository useful, please consider giving it a star.
