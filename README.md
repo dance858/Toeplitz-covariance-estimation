@@ -26,7 +26,7 @@ and [`FFTW3`](https://www.fftw.org/) to compute fast Fourier transforms. After h
 ## Examples
 In this example we show how the maximum-likelihood Toeplitz covariance estimate can be used to enhance the performance of the multiple-signal classification algorithm (MUSIC) for direction-of-arrival estimation.
 
-### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
+### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" /> and MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
 Running this code produces the following output:
 ```
 Test
