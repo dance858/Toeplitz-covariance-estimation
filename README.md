@@ -34,7 +34,9 @@ The MATLAB interface exposes the function
 
 An example of how it is called is given in `demo.m` in the `examples`-folder. Running `demo.m` results in the following figure:
 
-![]([(https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/demo.jpg)])
+![]((https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/demo.jpg))
+
+![](https://github.com/cvxgrp/pymde/blob/main/images/mnist_std.png?raw=true)
 
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" /> 
 The Python interface exposes the function
