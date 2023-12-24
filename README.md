@@ -47,13 +47,13 @@ The input parameters are defined as follows.
 * `n` - the covariance matrix to be estimated has dimension $n + 1$
 * `K` - the number of measurements
 * `verbose` - if true the progress is printed out in every iteration
-* `tol` - the algorithm terminates when the Newton decrement is smaller than `tol`, typically 1e-8
-* `beta` - backtracking parameter, typically XXX
-* `alpha` - backtracking parameter, typically XXX
+* `tol` - the algorithm terminates when the Newton decrement is smaller than `tol`
+* `beta` and `alpha`  - backtracking parameters, 
 * `max_iter` - maximum number of iterations
 
+Typical values are `tol` = $1e-8$, `beta` = $0.8$, `alpha` = $0.05.$
 
-Here the output and arguments are defined as follows.
+The output parameters are defined as follows.
 * `x` and `y` - The real and imaginary parts of the maximum likelihood Toeplitz estimate. The corresponding covariance matrix can be reconstructed with       the command `toeplitz([2*x(1); x(2:end) + 1i*y])`
 * `grad_norm` - Euclidean norm of the gradient
 * `obj` - objective value
@@ -61,10 +61,7 @@ Here the output and arguments are defined as follows.
 * `iter` - number of iterations
 * `real_Z`- the real part of the data points, stacked along columns
 * `imag_Z`- the imaginary part of the data points, stacked along columns
-* `n` - the covariance matrix to be estimated has dimension $n + 1$
-* `K` - the number of measurements
-* `verbose` - if true the progress is printed out in every iteration
-
+* 
 An example of how this function is called is given in `demo.m` in the `examples`-folder. Running `demo.m` results in the following figure:
 
 $\hspace{3.5cm}$ ![](https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/demo.jpg)
