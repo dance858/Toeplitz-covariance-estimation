@@ -39,8 +39,14 @@ In this example we show how the maximum-likelihood Toeplitz covariance estimate 
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
 The MATLAB interface exposes the function
 ```
-[output] = NML(input)
+[x, y, grad_norm, obj, solve_time, iter] = NML(real_Z, imag_Z, n, K)
 ```
+Here the output and arguments are defined as follows.
+* `x` and `y` - 
+* `grad_norm` - Euclidean norm of the gradient
+* `obj` - objective value
+* `solve_time` - solve time in seconds
+* `iter` - number of iterations
 
 An example of how it is called is given in `demo.m` in the `examples`-folder. Running `demo.m` results in the following figure:
 
