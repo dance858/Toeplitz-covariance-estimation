@@ -51,7 +51,7 @@ The input parameters are defined as follows.
 * `beta` and `alpha`  - backtracking parameters, 
 * `max_iter` - maximum number of iterations
 
-Typical values are `tol` = $1e-8$, `beta` = $0.8$, `alpha` = $0.05.$
+Typical values are `tol` = $10^{-8}$, `beta` = $0.8$ and `alpha` = $0.05.$
 
 The output parameters are defined as follows.
 * `x` and `y` - The real and imaginary parts of the maximum likelihood Toeplitz estimate. The corresponding covariance matrix can be reconstructed with       the command `toeplitz([2*x(1); x(2:end) + 1i*y])`
