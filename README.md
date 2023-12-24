@@ -18,6 +18,9 @@ $S \in \mathbf{H}^{n+1}.$ Here $\mathbf{H}^{n+1}$ is the space of Hermitian matr
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
 
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
+```
+pip install NML
+```
 
 ### Building from source <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" height="20"/>
 `NML` is written in C and uses [`BLAS`](https://www.netlib.org/blas/) and [`LAPACK`](https://www.netlib.org/lapack/lapacke.html) for linear algebra operations, 
