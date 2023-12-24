@@ -36,6 +36,8 @@ An example of how it is called is given in `demo.m` in the `examples`-folder. Ru
 
 $\hspace{4cm}$ ![](https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/demo.jpg)
 
+This figure shows the mean-squared estimation error for MUSIC when used with the sample covariance matrix (labelled with `MSE_SC`) and the maximum likelihood estimate (labelled with `MSE_NML`), versus the number of measurements $K$.
+
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" /> 
 The Python interface exposes the function
 ```
