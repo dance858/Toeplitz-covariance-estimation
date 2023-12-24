@@ -23,16 +23,14 @@ make -f make_matlab
 ```
 This will create a mex-file. Remember to include the path to the mex-file where you want to use it.
 
-If you don't have the dependencies above installed:
-1. test
-2. test
+If you don't have the dependencies above installed XXX
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
 ```
 pip install NML
 ```
 
 ### Building from source <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" height="20"/>
-`NML` is written in C and uses [`BLAS`](https://www.netlib.org/blas/) and [`LAPACK`](https://www.netlib.org/lapack/lapacke.html) for linear algebra operations, 
+`NML` is written in C and uses [`CBLAS`](https://www.netlib.org/blas/#_cblas) and [`LAPACKE`](https://www.netlib.org/lapack/lapacke.html) for linear algebra operations, 
 and [`FFTW3`](https://www.fftw.org/) to compute fast Fourier transforms. After having installed these packages you can build `NML` using the provided CMake configuration.
 
 ## Examples
