@@ -61,7 +61,7 @@ The output parameters are defined as follows.
 * `iter` - number of iterations
 * `real_Z`- the real part of the data points, stacked along columns
 * `imag_Z`- the imaginary part of the data points, stacked along columns
-* 
+  
 An example of how this function is called is given in `demo.m` in the `examples`-folder. Running `demo.m` results in the following figure:
 
 $\hspace{3.5cm}$ ![](https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/demo.jpg)
