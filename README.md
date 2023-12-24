@@ -39,7 +39,7 @@ In this example we show how the maximum-likelihood Toeplitz covariance estimate 
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/> 
 The MATLAB interface exposes the function
 ```
-[x, y, grad_norm, obj, solve_time, iter] = NML(real_Z, imag_Z, n, K, verbose)
+[x, y, grad_norm, obj, solve_time, iter] = NML(real_Z, imag_Z, n, K, verbose, tol, beta, alpha, max_iter)
 ```
 Here the output and arguments are defined as follows.
 * `x` and `y` - The real and imaginary parts of the maximum likelihood Toeplitz estimate. The corresponding covariance matrix can be reconstructed with       the command `toeplitz([2*x(1); x(2:end) + 1i*y])`
