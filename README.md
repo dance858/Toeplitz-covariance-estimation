@@ -21,9 +21,6 @@ The MATLAB installation assumes that [`CBLAS`](https://www.netlib.org/blas/#_cbl
 git clone https://github.com/dance858/Toeplitz-covariance-estimation.git
 make -f make_matlab
 ```
-This will create a mex-file. Remember to include the path to the mex-file where you want to use it.
-
-If you don't have the dependencies above installed XXX
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
 ```
 pip install NML
