@@ -1,0 +1,9 @@
+# make_matlab
+
+all: build
+
+build:
+	mkdir -p build_mex
+	cd build_mex && cmake -DBUILD_MATLAB_COMMANDS=ON ../NML && make                          
+	mv build_mex/*.mex* .   
+	rm -rf build_mex

@@ -1,0 +1,77 @@
+%% Before you run this example, make sure that the NML-mex file is in this folder.
+setenv('BLAS_VERSION', '/usr/lib/x86_64-linux-gnu/libblas.so');
+clear; clc;
+
+% Define array geometry
+theta_rad = [-10, -5, 0, 5, 10]*pi/180; m = 15;
+M = length(theta_rad);                       % number of sources
+snr = 5;                                     % signal-to-noise ratio
+power_source = 1;  
+P = power_source*eye(M);                     % covariance matrix for source signals
+sig2 = power_source*10^(-snr/10);            % noise variance
+wavelength = 1;                              % normalized wavelength
+d = wavelength/2;                            % spacing between sensors, in wavelength  
+
+% Experiment parameters
+samples = (15:30:500);
+MC_runs = 1;
+
+% Parameters for NML
+verbose = 1;
+tol = 1e-9;
+beta = 0.7;
+alpha = 0.05;
+max_iter = 100;
+
+% Containers for evaluating the performance
+MSE_SC = zeros(1, length(samples));
+MSE_NML = zeros(1, length(samples));
+crb_sto = zeros(1, length(samples));
+crb_sto_uc = zeros(1, length(samples));
+average_solve_time = 0;
+average_iter = 0;
+
+for ii = 1:length(samples)
+    K = samples(ii);
+    fprintf("Simulating K = %i \n", K)
+    for run = 1:MC_runs 
+        % Generate data
+        [Y, true_cov] = generate_ula_data(power_source, sig2, d, m, M, K, ...
+              wavelength, theta_rad);
+        [dim, K] = size(Y);
+        n = dim - 1;
+        
+        % Estimate covariance matrix.
+        sample_cov = 1/K*(Y*Y');
+        [x, y, grad_norm, obj, solve_time, iter] = ...
+            NML(real(Y(:)), imag(Y(:)), n, K, verbose, tol, beta, alpha, max_iter);
+        NML_cov = toeplitz([2*x(1); x(2:end) + 1i*y]);
+
+        average_solve_time = average_solve_time + solve_time;
+        average_iter = average_iter + iter;
+
+        % Run root-music and compensate for different convention on angles
+        doa_NML_cov = sort(-rmusic_1d(NML_cov, M, 2*pi*d/wavelength).x_est);
+        doa_sample_cov = sort(-rmusic_1d(sample_cov, M, 2*pi*d/wavelength).x_est);
+       
+        % Compute angle estimation error
+        MSE_SC(ii) = MSE_SC(ii) + norm(theta_rad - doa_sample_cov)^2;
+        MSE_NML(ii) = MSE_NML(ii) + norm(theta_rad - doa_NML_cov)^2;
+    end  
+    MSE_SC(ii) = MSE_SC(ii)/(M*MC_runs);
+    MSE_NML(ii) = MSE_NML(ii)/(M*MC_runs);
+    
+    crb_sto(ii) = mean(diag(U_CRB(P, theta_rad, sig2, m, d, K)));
+    crb_sto_uc(ii) = mean(diag(S_CRB(P, theta_rad, sig2, m, d, K)));
+end
+average_iter = average_iter/(MC_runs*length(samples));
+average_solve_time = average_solve_time/(MC_runs*length(samples));
+
+%%
+figure()
+semilogy(samples, MSE_SC, '-x', samples, MSE_NML, '-x', ...
+         samples, crb_sto, '--', samples, crb_sto_uc, '--');
+ylabel('MSE', 'fontsize', 12); grid on;
+legend('MSE_{SC}', 'MSE_{NML}', 'U-CRB', 'S-CRB');
+xlabel('$K$', 'Interpreter', 'Latex')
+fprintf("Average solve time (s): %.2e \n", average_solve_time)
