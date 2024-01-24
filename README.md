@@ -11,7 +11,7 @@ $$
 with decision variable
 $R \in \mathbf{H}^{n+1}$
 and problem data
-$S \in \mathbf{H}^{n+1}$ representing the sample covariance matrix. Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method, which we refer to as `NML`,  along with possible applications can be found in the preprint XXX.
+$S \in \mathbf{H}^{n+1}$ representing the sample covariance matrix. Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method, which we refer to as `NML`,  along with possible applications can be found in our [preprint](https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/main.pdf).
 
 ## Installation
 
