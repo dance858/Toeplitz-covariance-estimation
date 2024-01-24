@@ -4,6 +4,7 @@ setenv('BLAS_VERSION', '/usr/lib/x86_64-linux-gnu/libblas.so');
 addpath('../algorithms/')
 addpath('../utils')
 %% Array geometry
+rng(1)
 M = 5;                                        % number of sources
 snr = 10;                                      % signal-to-noise ratio
 m = 20;                                       % number of sensors
@@ -15,7 +16,7 @@ d = wavelength/2;                             % spacing between sensors, in wave
 
 % Experiment parameters
 d_theta = linspace(2, 8, 20);
-MC_runs = 250;
+MC_runs = 1000;
 K = 200;
 
 % Containers for evaluating the performance
@@ -26,10 +27,13 @@ MSE_DA = zeros(1, length(d_theta));
 crb_sto = zeros(1, length(d_theta));
 crb_sto_uc = zeros(1, length(d_theta));
 
+DA_tot_time = 0;
+AML_tot_time = 0;
+NML_tot_time = 0;
+
 for ii = 1:length(d_theta)
-    
     theta_rad = [-2, -1, 0, 1, 2]*d_theta(ii)*pi/180;
-    
+    fprintf("Simulating d_theta(ii) = %i \n", d_theta(ii))
     for run = 1:MC_runs 
         % Generate data
         [Y] = generate_ula_data(power_source, sig2, d, m, M, K, ...
@@ -41,6 +45,10 @@ for ii = 1:length(d_theta)
         DA_cov = DA_out.estimate;
         AML_cov = AML_out.estimate;
         NML_cov = NML_out.estimate;
+  
+        DA_tot_time = DA_tot_time + DA_out.solve_time;
+        AML_tot_time = AML_tot_time + AML_out.solve_time;
+        NML_tot_time = NML_tot_time + NML_out.solve_time;
         
         % Run root-music.
         doa_NML_cov = rmusic_1d(NML_cov, M, 2*pi*d/wavelength);
@@ -70,11 +78,15 @@ for ii = 1:length(d_theta)
 end
 fprintf('\n');
 
+average_time_DA = DA_tot_time/(MC_runs*length(d_theta));
+average_time_AML = AML_tot_time/(MC_runs*length(d_theta));
+average_time_NML = NML_tot_time/(MC_runs*length(d_theta));
 %%
 figure()
 semilogy(d_theta, MSE_SC, '-x', d_theta, MSE_NML, '-x', ...
          d_theta, MSE_AML, '-x', d_theta, MSE_DA, '-x', ...
          d_theta, crb_sto, '--', d_theta, crb_sto_uc, '--');
-ylabel('MSE', 'Interpreter', 'Latex', 'fontsize', 12); grid on;
-legend('MSE_{SC}', 'MSE_{NML}', 'MSE_{AML}', 'MSE_{DA}', 'CRB', 'S-CRB');
-xlabel('$\Delta \theta$', 'Interpreter', 'Latex')
+grid on
+ylabel('MSE', 'Interpreter', 'Latex', 'fontsize', 12); 
+legend('SC', 'NML', 'AML', 'DA', 'U-CRB', 'S-CRB');
+xlabel('$\Delta \theta$', 'Interpreter', 'Latex', 'fontsize', 13)

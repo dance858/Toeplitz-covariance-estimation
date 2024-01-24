@@ -4,9 +4,10 @@ setenv('BLAS_VERSION', '/usr/lib/x86_64-linux-gnu/libblas.so');
 addpath('../algorithms')
 addpath('../utils')
 %% Array geometry
+rng(1)
 theta_rad = [-10, -5, 0, 5, 10]*pi/180; m = 15;
 M = length(theta_rad);                        % number of sources
-snr = 5;                                      % signal-to-noise ratio
+snr = 10;                                      % signal-to-noise ratio
 power_source = 1;  
 P = power_source*eye(M);                      % covariance matrix for source signals
 sig2 = power_source*10^(-snr/10);             % noise variance
@@ -15,7 +16,7 @@ d = wavelength/2;                             % spacing between sensors, in wave
 
 % Experiment parameters
 samples = (15:20:500);
-MC_runs = 100;
+MC_runs = 1000;
 
 % Containers for evaluating the performance
 MSE_SC = zeros(1, length(samples));
@@ -98,16 +99,18 @@ average_time_NML = NML_tot_time/(MC_runs*length(samples));
 
 %%
 figure()
-semilogy(samples, MSE_SC, '-x', samples, MSE_NML, '-x', ...
-         samples, MSE_AML, '-x', samples, MSE_DA, '-x', ...
+semilogy(samples, MSE_SC, '-o', samples, MSE_NML, '-square', ...
+         samples, MSE_AML, '-^', samples, MSE_DA, '-v', ...
          samples, crb_sto, '--', samples, crb_sto_uc, '--');
-ylabel('MSE', 'fontsize', 12); grid on;
-legend('MSE_{SC}', 'MSE_{NML}', 'MSE_{AML}', 'MSE_{DA}', 'CRB', 'S-CRB');
-xlabel('$N$', 'Interpreter', 'Latex')
+grid on;
+ylabel('MSE', 'Interpreter', 'Latex', 'fontsize', 12);
+legend('SC', 'NML', 'AML', 'DA', 'U-CRB', 'S-CRB');
+xlabel('$N$', 'Interpreter', 'Latex', 'fontsize', 12)
 
 figure()
-semilogy(samples, MSE_cov_SC, '-x', samples, MSE_cov_NML, '-x', ...
-         samples, MSE_cov_AML, '-x', samples, MSE_cov_DA, '-x');
-ylabel('MSE', 'fontsize', 12); grid on;
-legend('MSE_{SC}', 'MSE_{NML}', 'MSE_{AML}', 'MSE_{DA}');
+semilogy(samples, MSE_cov_SC, '-o', samples, MSE_cov_NML, '-square', ...
+         samples, MSE_cov_AML, '-^', samples, MSE_cov_DA, '-v');
+grid on;
+ylabel('MSE', 'Interpreter', 'Latex', 'fontsize', 12); 
+legend('SC', 'NML', 'AML', 'DA');
 xlabel('$N$', 'Interpreter', 'Latex')

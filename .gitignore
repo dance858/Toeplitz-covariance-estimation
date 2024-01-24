@@ -171,4 +171,5 @@ cython_debug/
 *.txt
 *.#
 *.mex*
+*.mat
 data

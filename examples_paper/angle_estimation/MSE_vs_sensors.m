@@ -6,7 +6,7 @@ addpath('../utils')
 %% Array geometry
 theta_rad = [-10, -5, 0, 5, 10]*pi/180;
 M = length(theta_rad);                        % number of sources
-snr = 10;                                     % signal-to-noise ratio
+snr = 10;                                      % signal-to-noise ratio
 power_source = 1;  
 P = power_source*eye(M);                      % covariance matrix for source signals
 sig2 = power_source*10^(-snr/10);             % noise variance
@@ -15,7 +15,7 @@ d = wavelength/2;                             % spacing between sensors, in wave
 
 % Experiment parameters
 sensors = (10:1:30);
-MC_runs = 100;
+MC_runs = 500;
 K = 100;
 
 % Containers for evaluating the performance
@@ -87,6 +87,7 @@ figure()
 semilogy(sensors, MSE_SC, '-x', sensors, MSE_NML, '-x', ...
          sensors, MSE_AML, '-x', sensors, MSE_DA, '-x', ...
          sensors, crb_sto, '--', sensors, crb_sto_uc, '--');
-ylabel('MSE', 'fontsize', 12); grid on;
-legend('MSE_{SC}', 'MSE_{NML}', 'MSE_{AML}', 'MSE_{DA}', 'CRB', 'S-CRB');
-xlabel('$m$', 'Interpreter', 'Latex')
+grid on;
+ylabel('MSE', 'Interpreter', 'Latex', 'fontsize', 12); 
+legend('SC', 'NML', 'AML', 'DA', 'U-CRB', 'S-CRB');
+xlabel('$m$', 'Interpreter', 'Latex', 'fontsize', 12)

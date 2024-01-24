@@ -4,6 +4,7 @@ setenv('BLAS_VERSION', '/usr/lib/x86_64-linux-gnu/libblas.so');
 addpath('../algorithms')
 addpath('../utils')
 %% Array geometry
+rng(0)
 theta_rad = [-10, -5, 0, 5, 10]*pi/180; m = 15;
 M = length(theta_rad);                        % number of sources
 power_source = 1;  
@@ -13,8 +14,8 @@ d = wavelength/2;                             % spacing between sensors, in wave
 
 % Experiment parameters
 all_sig2 = 10.^linspace(-2.5, 0, 10);
-MC_runs = 100;
-K = 1000;
+MC_runs = 1000;
+K = 200;
 
 % Containers for evaluating the performance
 MSE_SC = zeros(1, length(all_sig2));
@@ -90,6 +91,8 @@ figure()
 semilogy(snr, MSE_SC, '-x', snr, MSE_NML, '-x', ...
          snr, MSE_AML, '-x', snr, MSE_DA, '-x', ...
          snr, crb_sto, '--', snr, crb_sto_uc, '--');
-ylabel('MSE', 'fontsize', 12); grid on;
-legend('MSE_{SC}', 'MSE_{NML}', 'MSE_{AML}', 'MSE_{DA}', 'CRB', 'S-CRB');
+grid on
+ylabel('MSE', 'Interpreter', 'Latex', 'fontsize', 12); 
+legend('SC', 'NML', 'AML', 'DA', 'U-CRB', 'S-CRB');
 xlabel('SNR', 'Interpreter', 'Latex')
+
