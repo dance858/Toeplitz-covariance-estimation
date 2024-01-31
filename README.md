@@ -11,7 +11,7 @@ $$
 with decision variable
 $R \in \mathbf{H}^{n+1}$
 and problem data
-$S \in \mathbf{H}^{n+1}$ representing the sample covariance matrix. Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method, which we refer to as `NML`,  along with possible applications can be found in our paper XXX.
+$S \in \mathbf{H}^{n+1}$ representing the sample covariance matrix. Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method, which we refer to as `NML`,  along with possible applications can be found in our [preprint](https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/main.pdf).
 
 ## Installation
 
@@ -22,9 +22,12 @@ git clone https://github.com/dance858/Toeplitz-covariance-estimation.git
 make -f make_matlab
 ```
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
+A Python interface is under development. Please reach out if you need a Python interface as soon as possible.
+<!--
 ```
 pip install NML
 ```
+-->
 
 ### Building from source <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" height="20"/>
 `NML` is written in C and uses [`CBLAS`](https://www.netlib.org/blas/#_cblas) and [`LAPACKE`](https://www.netlib.org/lapack/lapacke.html) for linear algebra operations, 
@@ -66,22 +69,23 @@ $\hspace{3.5cm}$ ![](https://github.com/dance858/Toeplitz-covariance-estimation/
 This figure shows the mean-squared estimation error for MUSIC when used with the sample covariance matrix (labelled with `MSE_SC`) and the maximum likelihood estimate (labelled with `MSE_NML`), versus the number of measurements $K$. For more explanations and details on the dotted lines (which represent Cramér-Rao bounds) we refer to Section 4 of our paper. 
 
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" /> 
+<!--
 The Python interface exposes the function
 ```
 [x, y, grad_norm, obj, solve_time, iter] = NML(real_Z, imag_Z, n, K, verbose, tol, beta, alpha, max_iter)
 ```
 The parameters are defined as in the MATLAB interface. An example of how this function is called is given in `demo.py`.
-
+-->
 ## Citing
 If you find this repository useful, please consider giving it a star.
 
 If you wish to cite our work we ask you to use the following BibTex entry.
 
 ```
-@article{CederbergXXX,
+@article{Cederberg2024,
   author  = {Daniel Cederberg},
-  title   = {XXX},
-  journal = {XXX},
-  year    = {XXX},
+  title   = {Toeplitz covariance estimation with applications to MUSIC},
+  journal = {Submitted to IEEE Transactions on Signal Processing},
+  year    = {2024},
 }
 ```
