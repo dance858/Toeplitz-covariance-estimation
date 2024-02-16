@@ -37,7 +37,6 @@ int lev_dur_real(double *y, double *L, double *sigma2, const int p){
     }
 }
 
-
 int lev_dur_complex(double complex *y, double complex *L, double *sigma2, const int p){
     /* initialization */
     double complex kappa = -y[1]/y[0];                       /* reflection coefficient */

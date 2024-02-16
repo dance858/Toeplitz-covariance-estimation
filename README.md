@@ -11,7 +11,7 @@ $$
 with decision variable
 $R \in \mathbf{H}^{n+1}$
 and problem data
-$S \in \mathbf{H}^{n+1}$ representing the sample covariance matrix. Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method, which we refer to as `NML`,  along with possible applications can be found in our [preprint](https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/main.pdf).
+$S \in \mathbf{H}^{n+1}$ representing the sample covariance matrix. Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method, which we refer to as `NML`,  along with possible applications can soon be found in a forthcoming paper.
 
 ## Installation
 
@@ -78,14 +78,3 @@ The parameters are defined as in the MATLAB interface. An example of how this fu
 -->
 ## Citing
 If you find this repository useful, please consider giving it a star.
-
-If you wish to cite our work we ask you to use the following BibTex entry.
-
-```
-@article{Cederberg2024,
-  author  = {Daniel Cederberg},
-  title   = {Toeplitz covariance estimation with applications to MUSIC},
-  journal = {Submitted to IEEE Transactions on Signal Processing},
-  year    = {2024},
-}
-```
