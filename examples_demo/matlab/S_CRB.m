@@ -1,7 +1,6 @@
 function [CRB] = S_CRB(P, theta_rad, sig2, m, d, N)
-% I think this code implement eq. 10 and 11 in
-% https://research.wmz.ninja/articles/2017/03/crbs-in-classical-doa-estimation-problems.html.
-% The blog post lists VanTrees as the source. 
+% From https://github.com/morriswmz/doa-tools
+% Also see https://research.wmz.ninja/articles/2017/03/crbs-in-classical-doa-estimation-problems.html.
 
 j=sqrt(-1);
 A=exp(-2*pi*j*d*[0:m-1].'*sin(theta_rad));

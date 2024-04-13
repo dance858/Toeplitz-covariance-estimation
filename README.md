@@ -11,7 +11,10 @@ $$
 with decision variable
 $R \in \mathbf{H}^{n+1}$
 and problem data
-$S \in \mathbf{H}^{n+1}$ representing the sample covariance matrix. Here $\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A description of the method, which we refer to as `NML`,  along with possible applications can soon be found in a forthcoming paper.
+$S \in \mathbf{H}^{n+1}$ representing the sample covariance matrix. Here
+$\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A
+description of the method, which we refer to as `NML`,  along with possible
+applications can be found in our [paper](https://www.sciencedirect.com/science/article/pii/S0165168424001257).
 
 ## Installation
 
@@ -77,4 +80,20 @@ The Python interface exposes the function
 The parameters are defined as in the MATLAB interface. An example of how this function is called is given in `demo.py`.
 -->
 ## Citing
-If you find this repository useful, please consider giving it a star.
+If you find this repository useful, please consider giving it a star. If you
+wish to cite this work you may use the following BibTex:
+
+```
+@article{Ced24,
+title = {Toeplitz covariance estimation with applications to MUSIC},
+journal = {Signal Processing},
+volume = {221},
+pages = {109506},
+year = {2024},
+issn = {0165-1684},
+doi = {https://doi.org/10.1016/j.sigpro.2024.109506},
+author = {Daniel Cederberg},
+}
+```
+
+
