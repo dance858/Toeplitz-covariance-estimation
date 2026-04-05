@@ -14,7 +14,6 @@
        status: 1 if the factorization succeded, 0 otherwise.
 */
 int lev_dur_real(const double *y, double *L, double *sigma2, int p);
-int lev_dur_complex(const nml_complex *y, nml_complex *L, double *sigma2,
-                    int p);
+int lev_dur_complex(const nml_complex *y, nml_complex *L, double *sigma2, int p);
 
 #endif
