@@ -2,24 +2,14 @@
 #include <math.h>
 #include <string.h>
 
-/* y = x + a*conj(reverse(x)). */
-void zaxpy_variant(int n, const nml_complex *a, const nml_complex *x, nml_complex *y)
+void zaxpy_variant(int n, nml_complex a, const nml_complex *x, nml_complex *y)
 {
     for (int i = 0; i < n; i++)
     {
-        y[i] = x[i] + (*a) * conj(x[n - 1 - i]);
+        y[i] = x[i] + a * conj(x[n - 1 - i]);
     }
 }
 
-/* L <- L*sqrt(D^{-1}) where D is diagonal and L is lower triangular.
-   This operation scales the columns of L.
-
-    IN:
-        D: size m array with diagonal entries
-        L: column major representation of L
-
-    NOTE: D must be real
- */
 void lower_tri_diag_isqrt_mult(int m, const double *D, nml_complex *L)
 {
     int index = 0;
@@ -33,12 +23,6 @@ void lower_tri_diag_isqrt_mult(int m, const double *D, nml_complex *L)
     }
 }
 
-/*
-    IN:
-        z: output, represents the first column of S
-        S: column major representation of lower part of S
-        m: dimension of S (S is m x m)
-*/
 void diagonal_averaging(nml_complex *z, const nml_complex *S, int m)
 {
     for (int i = 0; i < m; i++)
@@ -54,12 +38,6 @@ void diagonal_averaging(nml_complex *z, const nml_complex *S, int m)
     }
 }
 
-/* Computes the average along the diagonals in the lower triangular part of a
-   matrix S.
-        z: output, represents the first column of S
-        S: column major representation of S, full storage (array of length m * m)
-        m: dimension of S (S is m x m)
-*/
 void diagonal_averaging_full(nml_complex *z, const nml_complex *S, int m)
 {
     for (int i = 0; i < m; i++)
@@ -89,7 +67,6 @@ void tri_to_full(nml_complex *dest, const nml_complex *src, int ncols)
     }
 }
 
-/* Assumes column-major order. A is nrows x ncols, A_padded is N x ncols. */
 void pad_with_zeros(const nml_complex *A, nml_complex *A_padded, int nrows,
                     int ncols, int N)
 {
@@ -100,7 +77,6 @@ void pad_with_zeros(const nml_complex *A, nml_complex *A_padded, int nrows,
     }
 }
 
-/* in-place hermitian conjugate of a matrix. Assumes column-major order */
 void hermitian_conj(nml_complex *A, int nrows)
 {
     for (int k = 0; k < nrows; k++)

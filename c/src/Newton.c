@@ -12,13 +12,9 @@
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #endif
 
-/* Evaluates the objective function
-   f(x, y) = log det T(x, y) + Tr( T(x, y)^{-1} S).
-
-   NOTE: Before this function is called, chol_toep and sigma2 must have been
-   computed:
-            T(x, y)^{-1} = chol_toep*diag(sigma2)^{-1}*chol_toep^H.
-*/
+/* Evaluates the objective function f(x, y) = log det T(x, y) + Tr( T(x, y)^{-1} S).
+   Before this function is called, chol_toep and sigma2 must have been computed:
+   T(x, y)^{-1} = chol_toep*diag(sigma2)^{-1}*chol_toep^H. */
 static double compute_obj(NML_workspace *w, int n_plus_one)
 {
     double obj = 0;
@@ -44,7 +40,7 @@ static double compute_obj(NML_workspace *w, int n_plus_one)
     return obj;
 }
 
-/* Convergence if Newton decrement < tol */
+/* Converged if Newton decrement < tol */
 static int has_converged(NML_workspace *w, int two_n_plus_one, double tol)
 {
     w->newton_dec = cblas_ddot(two_n_plus_one, w->grad, 1, w->neg_dir, 1);
@@ -52,11 +48,8 @@ static int has_converged(NML_workspace *w, int two_n_plus_one, double tol)
     return (w->newton_dec < tol);
 }
 
-/* Computes the step size.
-
-    NOTE: When this function is called, w->neg_dir must contain the NEGATIVE
-          search direction.
-*/
+/* Computes the step size. When this function is called, w->neg_dir must contain the
+   NEGATIVE search direction. */
 static void compute_stepsize(NML_workspace *w, int n, int n_plus_one,
                              int two_n_plus_one, double beta, double alpha)
 {

@@ -97,11 +97,11 @@ if(MSVC)
     if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
         # clang-cl needs the Clang runtime for complex arithmetic (__divdc3, __muldc3)
         execute_process(
-            COMMAND ${CMAKE_C_COMPILER} --print-libgcc-file-name --target=x86_64-pc-windows-msvc
+            COMMAND ${CMAKE_C_COMPILER} --print-file-name=clang_rt.builtins-x86_64.lib
             OUTPUT_VARIABLE CLANG_RT_BUILTINS
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
-        if(CLANG_RT_BUILTINS)
+        if(CLANG_RT_BUILTINS AND NOT CLANG_RT_BUILTINS STREQUAL "clang_rt.builtins-x86_64.lib")
             target_link_libraries(nml PUBLIC ${CLANG_RT_BUILTINS})
         endif()
     endif()
