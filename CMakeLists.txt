@@ -50,7 +50,7 @@ endif()
 
 # --- NML library ---
 set(NML_SOURCES
-    c/src/NML_solve.c
+    c/src/NML_solver.c
     c/src/Newton.c
     c/src/linalg.c
     c/src/levinson_durbin.c
@@ -66,10 +66,10 @@ set_property(TARGET nml PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(nml
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/c/include>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/c>
         $<INSTALL_INTERFACE:include>
     PRIVATE
-        ${CMAKE_SOURCE_DIR}/c/src
+        ${CMAKE_SOURCE_DIR}/c/include
         ${FFTW3_INCLUDE_DIRS}
 )
 

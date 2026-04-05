@@ -29,38 +29,41 @@ def _load_lib():
 
     _LIB = ctypes.CDLL(str(lib_path))
 
-    # int NML(double complex *Z_data, int n, int K, NML_out *output,
-    #         double tol, double beta, double alpha, int verbose, int max_iter)
-    _LIB.NML.restype = ctypes.c_int
-    _LIB.NML.argtypes = [
-        ctypes.c_void_p,   # Z_data (double complex *)
-        ctypes.c_int,      # n
-        ctypes.c_int,      # K
-        ctypes.c_void_p,   # output (NML_out *)
-        ctypes.c_double,   # tol
-        ctypes.c_double,   # beta
-        ctypes.c_double,   # alpha
-        ctypes.c_int,      # verbose
-        ctypes.c_int,      # max_iter
+    _LIB.nml_new_solver.restype = ctypes.c_void_p
+    _LIB.nml_new_solver.argtypes = [
+        ctypes.c_int, ctypes.c_double, ctypes.c_double,
+        ctypes.c_double, ctypes.c_int,
     ]
 
-    _LIB.NML_free_output.restype = None
-    _LIB.NML_free_output.argtypes = [ctypes.c_void_p]
+    _LIB.nml_new_result.restype = ctypes.c_void_p
+    _LIB.nml_new_result.argtypes = [ctypes.c_int]
+
+    _LIB.nml_solve.restype = ctypes.c_int
+    _LIB.nml_solve.argtypes = [
+        ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int,
+        ctypes.c_void_p, ctypes.c_int,
+    ]
+
+    _LIB.nml_free_solver.restype = None
+    _LIB.nml_free_solver.argtypes = [ctypes.c_void_p]
+
+    _LIB.nml_free_result.restype = None
+    _LIB.nml_free_result.argtypes = [ctypes.c_void_p]
 
     return _LIB
 
 
-class _NML_out(ctypes.Structure):
-    """Mirrors the C struct NML_out."""
+class _NML_result(ctypes.Structure):
+    """Mirrors the C struct NML_result."""
     _fields_ = [
+        ("x", ctypes.POINTER(ctypes.c_double)),
+        ("y", ctypes.POINTER(ctypes.c_double)),
         ("grad_norm", ctypes.c_double),
         ("obj", ctypes.c_double),
+        ("solve_time", ctypes.c_double),
         ("iter", ctypes.c_int),
-        ("diag_init_succeded", ctypes.c_int),
+        ("diag_init_succeeded", ctypes.c_int),
         ("num_of_hess_chol_fails", ctypes.c_int),
-        ("total_time", ctypes.c_double),
-        ("x_sol", ctypes.POINTER(ctypes.c_double)),
-        ("y_sol", ctypes.POINTER(ctypes.c_double)),
     ]
 
 
@@ -109,37 +112,39 @@ def solve(Z, tol=1e-8, beta=0.8, alpha=0.05, verbose=False, max_iter=200):
     # Make a contiguous copy (column-major) since C may modify it
     Z_data = np.asfortranarray(Z).copy()
 
-    out = _NML_out()
-    ret = lib.NML(
+    solver_ptr = lib.nml_new_solver(n, tol, beta, alpha, max_iter)
+    result = _NML_result()
+
+    # Allocate x and y arrays for the result
+    x_buf = (ctypes.c_double * (n + 1))()
+    y_buf = (ctypes.c_double * n)()
+    result.x = ctypes.cast(x_buf, ctypes.POINTER(ctypes.c_double))
+    result.y = ctypes.cast(y_buf, ctypes.POINTER(ctypes.c_double))
+
+    ret = lib.solve(
+        solver_ptr,
         Z_data.ctypes.data_as(ctypes.c_void_p),
-        ctypes.c_int(n),
-        ctypes.c_int(K),
-        ctypes.byref(out),
-        ctypes.c_double(tol),
-        ctypes.c_double(beta),
-        ctypes.c_double(alpha),
-        ctypes.c_int(int(verbose)),
-        ctypes.c_int(max_iter),
+        K, ctypes.byref(result), int(verbose),
     )
 
     if ret != 0:
+        lib.free_solver(solver_ptr)
         raise RuntimeError(f"NML solver returned error code {ret}")
 
-    # Copy results before freeing
-    x = np.ctypeslib.as_array(out.x_sol, shape=(n + 1,)).copy()
-    y = np.ctypeslib.as_array(out.y_sol, shape=(n,)).copy()
+    x = np.ctypeslib.as_array(result.x, shape=(n + 1,)).copy()
+    y = np.ctypeslib.as_array(result.y, shape=(n,)).copy()
 
-    result = {
+    out = {
         "x": x,
         "y": y,
-        "obj": out.obj,
-        "grad_norm": out.grad_norm,
-        "time": out.total_time,
-        "iter": out.iter,
-        "diag_init_succeeded": bool(out.diag_init_succeded),
-        "num_hess_chol_fails": out.num_of_hess_chol_fails,
+        "obj": result.obj,
+        "grad_norm": result.grad_norm,
+        "time": result.solve_time,
+        "iter": result.iter,
+        "diag_init_succeeded": bool(result.diag_init_succeeded),
+        "num_hess_chol_fails": result.num_of_hess_chol_fails,
     }
 
-    lib.NML_free_output(ctypes.byref(out))
+    lib.free_solver(solver_ptr)
 
-    return result
+    return out
