@@ -1,3 +1,3 @@
-from .solver import solve
+from .solver import NMLSolver
 
-__all__ = ["solve"]
+__all__ = ["NMLSolver"]

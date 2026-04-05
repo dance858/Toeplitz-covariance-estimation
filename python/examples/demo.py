@@ -4,7 +4,7 @@ Generates synthetic data from a Toeplitz covariance matrix and recovers
 the covariance using the NML solver.
 """
 import numpy as np
-from nml import solve
+from nml import NMLSolver
 
 
 def make_toeplitz_cov(rho, n):
@@ -31,8 +31,11 @@ def main():
              1j * np.random.randn(n_plus_one, K)) / np.sqrt(2)
     Z = L @ noise
 
-    # Solve
-    result = solve(Z, verbose=True)
+    # Create solver and solve
+    n = n_plus_one - 1
+    solver = NMLSolver(n)
+    result = solver.solve(Z, verbose=True)
+    solver.free()
 
     print(f"\nSolver converged in {result['iter']} iterations")
     print(f"Objective: {result['obj']:.6f}")

@@ -52,13 +52,13 @@ endif()
 
 # --- NML library ---
 set(NML_SOURCES
-    c/src/NML_solver.c
-    c/src/Newton.c
-    c/src/linalg.c
-    c/src/levinson_durbin.c
-    c/src/diff.c
-    c/src/utils.c
-    c/src/lapacke_compat.c
+    C/src/NML_solver.c
+    C/src/Newton.c
+    C/src/linalg.c
+    C/src/levinson_durbin.c
+    C/src/diff.c
+    C/src/utils.c
+    C/src/lapacke_compat.c
 )
 
 add_library(nml ${NML_SOURCES})
@@ -68,10 +68,10 @@ target_compile_definitions(nml PRIVATE NML_VERSION="${PROJECT_VERSION}")
 
 target_include_directories(nml
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/c>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/C>
         $<INSTALL_INTERFACE:include>
     PRIVATE
-        ${CMAKE_SOURCE_DIR}/c/include
+        ${CMAKE_SOURCE_DIR}/C/include
         ${FFTW3_INCLUDE_DIRS}
 )
 
@@ -123,7 +123,7 @@ endif()
 option(BUILD_TESTS "Build tests" OFF)
 if(BUILD_TESTS)
     enable_testing()
-    add_subdirectory(c/tests)
+    add_subdirectory(C/tests)
 endif()
 
 # --- Optional: MATLAB MEX ---
