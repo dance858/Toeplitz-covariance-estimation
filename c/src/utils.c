@@ -14,9 +14,9 @@ void reverse_real(double *y, const int N)
 }
 
 /* reverses a complex-valued array of size N */
-void reverse_complex(double complex *y, const int N)
+void reverse_complex(nml_complex *y, const int N)
 {
-    double complex c;
+    nml_complex c;
     int i, j;
     for (i = 0, j = N - 1; i < j; i++, j--)
     {
@@ -32,14 +32,14 @@ void print_my_vector_real(double *x, const int n)
     printf("\n");
 }
 
-void print_my_vector_complex(double complex *x, const int n)
+void print_my_vector_complex(nml_complex *x, const int n)
 {
     for (int i = 0; i < n; i++) printf("%f + %fi \t", creal(x[i]), cimag(x[i]));
     printf("\n");
 }
 
 /* Assumes column-major order */
-void print_complex_lower_triangular_matrix(double complex *L, int nrows)
+void print_complex_lower_triangular_matrix(nml_complex *L, int nrows)
 {
     int i, j, index;
 
@@ -74,7 +74,7 @@ void print_real_lower_triangular_matrix(double *L, int nrows)
 }
 
 /* Assumes column-major order */
-void print_complex_matrix(double complex *A, int nrows, int ncols)
+void print_complex_matrix(nml_complex *A, int nrows, int ncols)
 {
     int i, j;
     for (i = 0; i < nrows; i++)

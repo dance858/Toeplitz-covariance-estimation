@@ -125,7 +125,7 @@ static int test_levinson_durbin_non_pd(void)
 /* --------------------------------------------------------------------------
    Simple LCG random number generator (deterministic, no srand dependency)
    -------------------------------------------------------------------------- */
-static unsigned long rng_state = 12345;
+static unsigned long long rng_state = 12345;
 
 static double rand_normal(void)
 {
@@ -171,7 +171,7 @@ static int test_nml_solver(void)
     }
 
     /* Generate Z = L * noise, column-major, size n1 x K */
-    double complex *Z = malloc(sizeof(double complex) * n1 * K);
+    nml_complex *Z = malloc(sizeof(nml_complex) * n1 * K);
     rng_state = 42; /* reset for reproducibility */
     for (int k = 0; k < K; k++)
     {
@@ -181,14 +181,14 @@ static int test_nml_solver(void)
         {
             double val = 0;
             for (int j = 0; j <= i; j++) val += L[i][j] * noise[j];
-            Z[i + k * n1] = val + 0.0 * I;
+            Z[i + k * n1] = val;
         }
     }
 
     /* Call solver */
     NML_solver *solver = nml_new_solver(n, 1e-8, 0.8, 0.05, 200);
     NML_result *result = nml_new_result(n);
-    int ret = nml_solve(solver, Z, K, result, 0);
+    int ret = nml_solve(solver, Z, K, result, 1);
     ASSERT(ret == 0, "solve should return 0");
     ASSERT(result->iter < 50, "should converge in < 50 iterations");
     ASSERT(isfinite(result->obj), "objective should be finite");

@@ -12,21 +12,17 @@
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #endif
 
-/* Evaluates the objective function
-   f(x, y) = log det T(x, y) + Tr( T(x, y)^{-1} S).
-
-   NOTE: Before this function is called, chol_toep and sigma2 must have been
-   computed:
-            T(x, y)^{-1} = chol_toep*diag(sigma2)^{-1}*chol_toep^H.
-*/
+/* Evaluates the objective function f(x, y) = log det T(x, y) + Tr( T(x, y)^{-1} S).
+   Before this function is called, chol_toep and sigma2 must have been computed:
+   T(x, y)^{-1} = chol_toep*diag(sigma2)^{-1}*chol_toep^H. */
 static double compute_obj(NML_workspace *w, int n_plus_one)
 {
     double obj = 0;
-    double complex one = 1;
+    nml_complex one = 1;
 
     /* compute w->RHL = R^H*L, where R is lower triangular and L is treated as a
        full matrix (despite L being lower triangular). */
-    memcpy(w->RHL, w->L_full, sizeof(double complex) * n_plus_one * n_plus_one);
+    memcpy(w->RHL, w->L_full, sizeof(nml_complex) * n_plus_one * n_plus_one);
     tri_to_full(w->full_chol_toep, w->chol_toep, n_plus_one);
     cblas_ztrmm(CblasColMajor, CblasLeft, CblasLower, CblasConjTrans, CblasNonUnit,
                 n_plus_one, n_plus_one, &one, w->full_chol_toep, n_plus_one, w->RHL,
@@ -44,25 +40,16 @@ static double compute_obj(NML_workspace *w, int n_plus_one)
     return obj;
 }
 
-/* Convergence if Newton decrement < tol */
-static int has_converged(NML_workspace *w, int two_n_plus_one, double tol,
-                         int verbose)
+/* Converged if Newton decrement < tol */
+static int has_converged(NML_workspace *w, int two_n_plus_one, double tol)
 {
-    double newton_dec = cblas_ddot(two_n_plus_one, w->grad, 1, w->neg_dir, 1);
+    w->newton_dec = cblas_ddot(two_n_plus_one, w->grad, 1, w->neg_dir, 1);
     w->grad_norm = cblas_dnrm2(two_n_plus_one, w->grad, 1);
-    if (verbose)
-    {
-        printf("grad_norm/obj: %.6e \t %.6f \n", w->grad_norm, w->obj);
-    }
-
-    return (newton_dec < tol);
+    return (w->newton_dec < tol);
 }
 
-/* Computes the step size.
-
-    NOTE: When this function is called, w->neg_dir must contain the NEGATIVE
-          search direction.
-*/
+/* Computes the step size. When this function is called, w->neg_dir must contain the
+   NEGATIVE search direction. */
 static void compute_stepsize(NML_workspace *w, int n, int n_plus_one,
                              int two_n_plus_one, double beta, double alpha)
 {
@@ -78,7 +65,7 @@ static void compute_stepsize(NML_workspace *w, int n, int n_plus_one,
         for (i = 1; i < n_plus_one; i++)
         {
             w->z[i] = (w->xy[i] - w->step_size * w->neg_dir[i]) -
-                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * I;
+                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * NML_I;
         }
 
         /* status equal to 1 indicates that the factorization failed */
@@ -106,7 +93,7 @@ static void compute_stepsize(NML_workspace *w, int n, int n_plus_one,
         for (i = 1; i < n_plus_one; i++)
         {
             w->z[i] = (w->xy[i] - w->step_size * w->neg_dir[i]) -
-                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * I;
+                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * NML_I;
         }
         status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, n);
         lower_tri_diag_isqrt_mult(n_plus_one, w->sigma2, w->chol_toep);
@@ -133,6 +120,12 @@ void Newton(NML_solver *solver, NML_result *result)
     /* Compute objective value */
     w->obj = compute_obj(w, n_plus_one);
 
+    if (solver->verbose)
+    {
+        printf(" iter | objective      | grad norm    | newton dec   | step size\n");
+        printf("------+----------------+--------------+--------------+----------\n");
+    }
+
     for (i = 0; i < max_iter; i++)
     {
         /* compute gradient and Hessian */
@@ -148,13 +141,6 @@ void Newton(NML_solver *solver, NML_result *result)
             if (info == 0)
             {
                 break;
-            }
-
-            if (solver->verbose)
-            {
-                printf(
-                    "iter %i. Hessian not PD. Adding multiple of the identity. \n ",
-                    i);
             }
 
             result->num_of_hess_chol_fails += 1;
@@ -184,13 +170,24 @@ void Newton(NML_solver *solver, NML_result *result)
         cblas_dtpsv(CblasColMajor, CblasLower, CblasTrans, CblasNonUnit,
                     two_n_plus_one, w->chol_hess_packed, w->neg_dir, 1);
 
-        if (has_converged(w, two_n_plus_one, tol, solver->verbose))
+        if (has_converged(w, two_n_plus_one, tol))
         {
+            if (solver->verbose)
+            {
+                printf(" %4d | %14.6e | %12.4e | %12.4e |         -\n", i, w->obj,
+                       w->grad_norm, w->newton_dec);
+            }
             break;
         }
 
         /* compute step size. chol_toep and w->obj are updated. */
         compute_stepsize(w, n, n_plus_one, two_n_plus_one, beta, alpha);
+
+        if (solver->verbose)
+        {
+            printf(" %4d | %14.6e | %12.4e | %12.4e | %9.4f\n", i, w->obj,
+                   w->grad_norm, w->newton_dec, w->step_size);
+        }
 
         /* update iterate */
         cblas_daxpy(two_n_plus_one, -w->step_size, w->neg_dir, 1, w->xy, 1);

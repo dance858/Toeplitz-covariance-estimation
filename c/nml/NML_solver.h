@@ -1,7 +1,7 @@
 #ifndef NML_SOLVER_H
 #define NML_SOLVER_H
 
-#include <complex.h>
+#include "nml/types.h"
 
 typedef struct NML_solver NML_solver;
 
@@ -20,7 +20,7 @@ typedef struct
 NML_solver *nml_new_solver(int n, double tol, double beta, double alpha,
                            int max_iter);
 NML_result *nml_new_result(int n);
-int nml_solve(NML_solver *solver, const double complex *Z, int K, NML_result *result,
+int nml_solve(NML_solver *solver, const nml_complex *Z, int K, NML_result *result,
               int verbose);
 void nml_free_solver(NML_solver *solver);
 void nml_free_result(NML_result *result);

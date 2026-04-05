@@ -12,15 +12,17 @@ endif()
 if(APPLE)
     find_library(ACCELERATE_FRAMEWORK Accelerate REQUIRED)
     set(BLAS_LAPACK_LIBS ${ACCELERATE_FRAMEWORK})
+elseif(MSVC)
+    find_package(OpenBLAS CONFIG REQUIRED)
+    find_package(clapack CONFIG REQUIRED)
+    set(BLAS_LAPACK_LIBS OpenBLAS::OpenBLAS lapack)
 else()
     find_package(BLAS REQUIRED)
     find_package(LAPACK REQUIRED)
-    find_library(LAPACKE_LIB NAMES lapacke REQUIRED)
-    set(BLAS_LAPACK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${LAPACKE_LIB})
+    set(BLAS_LAPACK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 endif()
 
 # --- FFTW3 ---
-# Hint for Homebrew on macOS
 if(APPLE)
     execute_process(
         COMMAND brew --prefix fftw
@@ -56,13 +58,13 @@ set(NML_SOURCES
     c/src/levinson_durbin.c
     c/src/diff.c
     c/src/utils.c
+    c/src/lapacke_compat.c
 )
-if(APPLE)
-    list(APPEND NML_SOURCES c/src/lapacke_compat.c)
-endif()
 
 add_library(nml ${NML_SOURCES})
 set_property(TARGET nml PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+target_compile_definitions(nml PRIVATE NML_VERSION="${PROJECT_VERSION}")
 
 target_include_directories(nml
     PUBLIC
@@ -78,7 +80,35 @@ if(FFTW3_LIBRARY_DIRS)
 endif()
 target_link_libraries(nml PUBLIC ${BLAS_LAPACK_LIBS} ${FFTW3_LIBRARIES})
 
-if(NOT MSVC)
+if(MSVC)
+    if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        # clang-cl needs the Clang runtime for complex arithmetic (__divdc3, __muldc3)
+        execute_process(
+            COMMAND "${CMAKE_C_COMPILER}" --print-runtime-dir
+            OUTPUT_VARIABLE CLANG_RT_DIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+            RESULT_VARIABLE CLANG_RT_RESULT
+        )
+        if(CLANG_RT_RESULT EQUAL 0 AND EXISTS "${CLANG_RT_DIR}")
+            message(STATUS "Clang runtime dir: ${CLANG_RT_DIR}")
+        else()
+            # Fallback: find it relative to the compiler (VS-bundled Clang)
+            get_filename_component(CLANG_BIN_DIR "${CMAKE_C_COMPILER}" DIRECTORY)
+            file(GLOB CLANG_RT_DIR "${CLANG_BIN_DIR}/../lib/clang/*/lib/windows")
+            if(CLANG_RT_DIR)
+                list(GET CLANG_RT_DIR 0 CLANG_RT_DIR)
+                message(STATUS "Clang runtime dir (fallback): ${CLANG_RT_DIR}")
+            endif()
+        endif()
+        if(CLANG_RT_DIR AND EXISTS "${CLANG_RT_DIR}")
+            target_link_directories(nml PUBLIC "${CLANG_RT_DIR}")
+            target_link_libraries(nml PUBLIC clang_rt.builtins-x86_64)
+        else()
+            message(WARNING "Could not find Clang runtime builtins library")
+        endif()
+    endif()
+else()
     target_link_libraries(nml PUBLIC m)
     target_compile_options(nml PRIVATE -Wall -O3)
 endif()

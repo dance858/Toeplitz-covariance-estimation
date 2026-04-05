@@ -15,7 +15,7 @@
     NOTE: After exit, w->chol_toep has been modified so
           T(x, y)^{-1} = w->chol_toep * w->chol_toep^H.
 */
-static void init_guess(const double complex *Z_data, NML_solver *solver,
+static void init_guess(const nml_complex *Z_data, NML_solver *solver,
                        NML_result *result)
 {
     NML_workspace *w = &solver->work;
@@ -25,7 +25,7 @@ static void init_guess(const double complex *Z_data, NML_solver *solver,
 
     /* Compute sample covariance. The lower triangular part is stored in a
        full matrix of size (n+1) x (n+1) */
-    memset(w->sample_cov, 0, sizeof(double complex) * n_plus_one * n_plus_one);
+    memset(w->sample_cov, 0, sizeof(nml_complex) * n_plus_one * n_plus_one);
     cblas_zherk(CblasColMajor, CblasLower, CblasNoTrans, n_plus_one, solver->K,
                 1.0 / solver->K, Z_data, n_plus_one, 0.0, w->sample_cov, n_plus_one);
 
@@ -35,7 +35,7 @@ static void init_guess(const double complex *Z_data, NML_solver *solver,
     while (status != 0)
     {
         memcpy(w->L_full, w->sample_cov,
-               sizeof(double complex) * n_plus_one * n_plus_one);
+               sizeof(nml_complex) * n_plus_one * n_plus_one);
         status =
             LAPACKE_zpotrf(LAPACK_COL_MAJOR, 'L', n_plus_one, w->L_full, n_plus_one);
 
@@ -61,17 +61,18 @@ static void init_guess(const double complex *Z_data, NML_solver *solver,
 
         /* Copy Z_data since the in-place FFT below would modify the caller's data */
         int size = n_plus_one * solver->K;
-        double complex *Z_copy = malloc(sizeof(double complex) * size);
-        memcpy(Z_copy, Z_data, sizeof(double complex) * size);
+        nml_complex *Z_copy = malloc(sizeof(nml_complex) * size);
+        memcpy(Z_copy, Z_data, sizeof(nml_complex) * size);
 
         /* IFFT of data points, scaled correctly */
         fftw_plan plan_Z_data = fftw_plan_many_dft(
-            1, &n_plus_one, solver->K, Z_copy, &n_plus_one, 1, n_plus_one, Z_copy,
-            &n_plus_one, 1, n_plus_one, FFTW_BACKWARD, FFTW_ESTIMATE);
-        fftw_execute_dft(plan_Z_data, Z_copy, Z_copy);
+            1, &n_plus_one, solver->K, NML_FFTW(Z_copy), &n_plus_one, 1, n_plus_one,
+            NML_FFTW(Z_copy), &n_plus_one, 1, n_plus_one, FFTW_BACKWARD,
+            FFTW_ESTIMATE);
+        fftw_execute_dft(plan_Z_data, NML_FFTW(Z_copy), NML_FFTW(Z_copy));
 
         /* compute q of size (n+1) x 1, stored in z */
-        memset(w->z, 0, sizeof(double complex) * n_plus_one);
+        memset(w->z, 0, sizeof(nml_complex) * n_plus_one);
         for (int k = 0; k < solver->K; k++)
         {
             for (i = 0; i < n_plus_one; i++)
@@ -84,13 +85,13 @@ static void init_guess(const double complex *Z_data, NML_solver *solver,
         }
 
         /* compute FFT of q */
-        fftw_plan plan_q =
-            fftw_plan_dft_1d(n_plus_one, w->z, w->z, FFTW_FORWARD, FFTW_ESTIMATE);
+        fftw_plan plan_q = fftw_plan_dft_1d(
+            n_plus_one, NML_FFTW(w->z), NML_FFTW(w->z), FFTW_FORWARD, FFTW_ESTIMATE);
         fftw_execute(plan_q);
 
         /* scale with 1/(K*(n+1)^2). After this operation, w->z stores the first
            column of the circulant ML estimate. */
-        complex double scale = 1.0 / (solver->K * n_plus_one * n_plus_one);
+        nml_complex scale = 1.0 / (solver->K * n_plus_one * n_plus_one);
         cblas_zscal(n_plus_one, &scale, w->z, 1);
 
         status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, n);
@@ -127,8 +128,8 @@ NML_solver *nml_new_solver(int n, double tol, double beta, double alpha,
     w->xy = malloc(sizeof(*w->xy) * (2 * n + 1));
     w->z = malloc(sizeof(*w->z) * (n + 1));
 
-    w->grad_help = (double complex *) fftw_malloc(sizeof(double complex) * N);
-    w->hess_help = (double complex *) fftw_malloc(sizeof(double complex) * N * N);
+    w->grad_help = (nml_complex *) fftw_malloc(sizeof(nml_complex) * N);
+    w->hess_help = (nml_complex *) fftw_malloc(sizeof(nml_complex) * N * N);
     w->grad = malloc(sizeof(*w->grad) * (2 * n + 1));
     w->F = malloc(sizeof(*w->F) * N * N);
     w->G = malloc(sizeof(*w->G) * N * N);
@@ -146,17 +147,21 @@ NML_solver *nml_new_solver(int n, double tol, double beta, double alpha,
 
     w->neg_dir = malloc(sizeof(*w->neg_dir) * (2 * n + 1));
 
-    w->R_DFT = (double complex *) fftw_malloc(sizeof(double complex) * N * (n + 1));
-    w->A_DFT = (double complex *) fftw_malloc(sizeof(double complex) * N * (n + 1));
+    w->R_DFT = (nml_complex *) fftw_malloc(sizeof(nml_complex) * N * (n + 1));
+    w->A_DFT = (nml_complex *) fftw_malloc(sizeof(nml_complex) * N * (n + 1));
 
-    w->plan_R_DFT = fftw_plan_many_dft(1, &N, n + 1, w->R_DFT, &N, 1, N, w->R_DFT,
-                                       &N, 1, N, FFTW_FORWARD, FFTW_ESTIMATE);
-    w->plan_A_DFT = fftw_plan_many_dft(1, &N, n + 1, w->A_DFT, &N, 1, N, w->A_DFT,
-                                       &N, 1, N, FFTW_FORWARD, FFTW_ESTIMATE);
-    w->plan_grad_help = fftw_plan_dft_1d(N, w->grad_help, w->grad_help,
-                                         FFTW_BACKWARD, FFTW_ESTIMATE);
-    w->plan_hess_help = fftw_plan_many_dft(1, &N, N, w->A_DFT, &N, 1, N, w->A_DFT,
-                                           &N, 1, N, FFTW_BACKWARD, FFTW_ESTIMATE);
+    w->plan_R_DFT = fftw_plan_many_dft(1, &N, n + 1, NML_FFTW(w->R_DFT), &N, 1, N,
+                                       NML_FFTW(w->R_DFT), &N, 1, N, FFTW_FORWARD,
+                                       FFTW_ESTIMATE);
+    w->plan_A_DFT = fftw_plan_many_dft(1, &N, n + 1, NML_FFTW(w->A_DFT), &N, 1, N,
+                                       NML_FFTW(w->A_DFT), &N, 1, N, FFTW_FORWARD,
+                                       FFTW_ESTIMATE);
+    w->plan_grad_help =
+        fftw_plan_dft_1d(N, NML_FFTW(w->grad_help), NML_FFTW(w->grad_help),
+                         FFTW_BACKWARD, FFTW_ESTIMATE);
+    w->plan_hess_help = fftw_plan_many_dft(1, &N, N, NML_FFTW(w->A_DFT), &N, 1, N,
+                                           NML_FFTW(w->A_DFT), &N, 1, N,
+                                           FFTW_BACKWARD, FFTW_ESTIMATE);
     return s;
 }
 
@@ -213,7 +218,7 @@ void nml_free_solver(NML_solver *solver)
     free(solver);
 }
 
-int nml_solve(NML_solver *solver, const double complex *Z, int K, NML_result *result,
+int nml_solve(NML_solver *solver, const nml_complex *Z, int K, NML_result *result,
               int verbose)
 {
     Timer timer;
@@ -221,6 +226,13 @@ int nml_solve(NML_solver *solver, const double complex *Z, int K, NML_result *re
 
     solver->K = K;
     solver->verbose = verbose;
+
+    if (verbose)
+    {
+        printf("\n\tNML v%s - Toeplitz ML covariance estimation\n"
+               "\t(c) Daniel Cederberg, Stanford University, 2024\n\n",
+               NML_VERSION);
+    }
 
     result->diag_init_succeeded = 1;
     result->num_of_hess_chol_fails = 0;
@@ -230,6 +242,12 @@ int nml_solve(NML_solver *solver, const double complex *Z, int K, NML_result *re
 
     clock_gettime(CLOCK_MONOTONIC, &timer.end);
     result->solve_time = GET_ELAPSED_SECONDS(timer);
+
+    if (verbose)
+    {
+        printf("\nSolved in %d iterations, %.4fs\n", result->iter,
+               result->solve_time);
+    }
 
     return 0;
 }

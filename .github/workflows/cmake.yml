@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         build_type: [Release, Debug]
 
     steps:
@@ -19,11 +19,15 @@ jobs:
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
-      run: sudo apt-get update && sudo apt-get install -y libopenblas-dev liblapacke-dev libfftw3-dev
+      run: sudo apt-get update && sudo apt-get install -y libopenblas-dev libfftw3-dev
 
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: brew install fftw
+
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: vcpkg install openblas:x64-windows clapack:x64-windows fftw3:x64-windows
 
     - name: Configure CMake
       run: >
@@ -31,6 +35,7 @@ jobs:
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DBUILD_TESTS=ON
         -DCMAKE_VERBOSE_MAKEFILE=ON
+        ${{ runner.os == 'Windows' && '-T ClangCL -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake' || '' }}
 
     - name: Build
       run: cmake --build build --config ${{ matrix.build_type }}
