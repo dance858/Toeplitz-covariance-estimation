@@ -15,7 +15,7 @@
     NOTE: After exit, w->chol_toep has been modified so
           T(x, y)^{-1} = w->chol_toep * w->chol_toep^H.
 */
-static void init_guess(const double complex *Z_data, NML_solver *solver,
+static void init_guess(const nml_complex *Z_data, NML_solver *solver,
                        NML_result *result)
 {
     NML_workspace *w = &solver->work;
@@ -213,7 +213,7 @@ void nml_free_solver(NML_solver *solver)
     free(solver);
 }
 
-int nml_solve(NML_solver *solver, const double complex *Z, int K, NML_result *result,
+int nml_solve(NML_solver *solver, const nml_complex *Z, int K, NML_result *result,
               int verbose)
 {
     Timer timer;

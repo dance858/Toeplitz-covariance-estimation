@@ -1,14 +1,14 @@
 #ifndef NML_LAPACKE_COMPAT_H
 #define NML_LAPACKE_COMPAT_H
 
-#include <complex.h>
+#include "nml/types.h"
 
 #ifndef LAPACK_COL_MAJOR
 #define LAPACK_COL_MAJOR 102
 #endif
 
 typedef int lapack_int;
-typedef double _Complex lapack_complex_double;
+typedef nml_complex lapack_complex_double;
 
 lapack_int LAPACKE_zpotrf(int matrix_layout, char uplo, lapack_int n,
                           lapack_complex_double *a, lapack_int lda);
