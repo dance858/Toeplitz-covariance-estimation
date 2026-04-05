@@ -16,9 +16,8 @@ typedef double _Complex nml_complex;
 #define cimag(z) __imag__(z)
 #define cabs(z) __builtin_cabs(z)
 #define conj(z) __builtin_conj(z)
-#ifndef I
+#undef I
 #define I _Complex_I
-#endif
 #endif
 
 /* FFTW on Windows defines fftw_complex as double[2], not _Complex double.
