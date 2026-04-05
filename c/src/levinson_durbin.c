@@ -4,6 +4,7 @@
 #include "utils.h"
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 int lev_dur_real(const double *y, double *L, double *sigma2, int p)
 {
