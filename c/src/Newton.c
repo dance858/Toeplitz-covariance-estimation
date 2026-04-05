@@ -26,12 +26,11 @@ static double compute_obj(NML_workspace *w, int n_plus_one)
 
     /* compute w->RHL = R^H*L, where R is lower triangular and L is treated as a
        full matrix (despite L being lower triangular). */
-    memcpy(w->RHL, w->L_full,
-           sizeof(double complex) * n_plus_one * n_plus_one);
+    memcpy(w->RHL, w->L_full, sizeof(double complex) * n_plus_one * n_plus_one);
     tri_to_full(w->full_chol_toep, w->chol_toep, n_plus_one);
     cblas_ztrmm(CblasColMajor, CblasLeft, CblasLower, CblasConjTrans, CblasNonUnit,
-                n_plus_one, n_plus_one, &one, w->full_chol_toep, n_plus_one,
-                w->RHL, n_plus_one);
+                n_plus_one, n_plus_one, &one, w->full_chol_toep, n_plus_one, w->RHL,
+                n_plus_one);
 
     /* compute Tr(T(x, y)^{-1} S) */
     obj += cblas_dznrm2(n_plus_one * n_plus_one, w->RHL, 1);
@@ -79,7 +78,7 @@ static void compute_stepsize(NML_workspace *w, int n, int n_plus_one,
         for (i = 1; i < n_plus_one; i++)
         {
             w->z[i] = (w->xy[i] - w->step_size * w->neg_dir[i]) -
-                       (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * I;
+                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * I;
         }
 
         /* status equal to 1 indicates that the factorization failed */
@@ -107,7 +106,7 @@ static void compute_stepsize(NML_workspace *w, int n, int n_plus_one,
         for (i = 1; i < n_plus_one; i++)
         {
             w->z[i] = (w->xy[i] - w->step_size * w->neg_dir[i]) -
-                       (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * I;
+                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * I;
         }
         status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, n);
         lower_tri_diag_isqrt_mult(n_plus_one, w->sigma2, w->chol_toep);

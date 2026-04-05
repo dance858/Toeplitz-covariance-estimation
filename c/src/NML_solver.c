@@ -110,7 +110,8 @@ static void init_guess(const double complex *Z_data, NML_solver *solver,
     }
 }
 
-NML_solver *nml_new_solver(int n, double tol, double beta, double alpha, int max_iter)
+NML_solver *nml_new_solver(int n, double tol, double beta, double alpha,
+                           int max_iter)
 {
     NML_solver *s = malloc(sizeof(*s));
     s->n = n;
@@ -118,7 +119,7 @@ NML_solver *nml_new_solver(int n, double tol, double beta, double alpha, int max
     s->n_plus_one = n + 1;
     s->two_n_plus_one = 2 * n + 1;
 
-    s->settings = (NML_settings){tol, beta, alpha, max_iter};
+    s->settings = (NML_settings) {tol, beta, alpha, max_iter};
 
     NML_workspace *w = &s->work;
     int N = s->N;
@@ -132,7 +133,8 @@ NML_solver *nml_new_solver(int n, double tol, double beta, double alpha, int max
     w->F = malloc(sizeof(*w->F) * N * N);
     w->G = malloc(sizeof(*w->G) * N * N);
     w->hess_packed = malloc(sizeof(*w->hess_packed) * (n + 1) * (2 * n + 1));
-    w->chol_hess_packed = malloc(sizeof(*w->chol_hess_packed) * (n + 1) * (2 * n + 1));
+    w->chol_hess_packed =
+        malloc(sizeof(*w->chol_hess_packed) * (n + 1) * (2 * n + 1));
     w->hess_evals = malloc(sizeof(*w->hess_evals) * (2 * n + 1));
 
     w->full_chol_toep = malloc(sizeof(*w->full_chol_toep) * (n + 1) * (n + 1));
@@ -147,17 +149,14 @@ NML_solver *nml_new_solver(int n, double tol, double beta, double alpha, int max
     w->R_DFT = (double complex *) fftw_malloc(sizeof(double complex) * N * (n + 1));
     w->A_DFT = (double complex *) fftw_malloc(sizeof(double complex) * N * (n + 1));
 
-    w->plan_R_DFT =
-        fftw_plan_many_dft(1, &N, n + 1, w->R_DFT, &N, 1, N, w->R_DFT, &N, 1, N,
-                           FFTW_FORWARD, FFTW_ESTIMATE);
-    w->plan_A_DFT =
-        fftw_plan_many_dft(1, &N, n + 1, w->A_DFT, &N, 1, N, w->A_DFT, &N, 1, N,
-                           FFTW_FORWARD, FFTW_ESTIMATE);
-    w->plan_grad_help =
-        fftw_plan_dft_1d(N, w->grad_help, w->grad_help, FFTW_BACKWARD, FFTW_ESTIMATE);
-    w->plan_hess_help =
-        fftw_plan_many_dft(1, &N, N, w->A_DFT, &N, 1, N, w->A_DFT, &N, 1, N,
-                           FFTW_BACKWARD, FFTW_ESTIMATE);
+    w->plan_R_DFT = fftw_plan_many_dft(1, &N, n + 1, w->R_DFT, &N, 1, N, w->R_DFT,
+                                       &N, 1, N, FFTW_FORWARD, FFTW_ESTIMATE);
+    w->plan_A_DFT = fftw_plan_many_dft(1, &N, n + 1, w->A_DFT, &N, 1, N, w->A_DFT,
+                                       &N, 1, N, FFTW_FORWARD, FFTW_ESTIMATE);
+    w->plan_grad_help = fftw_plan_dft_1d(N, w->grad_help, w->grad_help,
+                                         FFTW_BACKWARD, FFTW_ESTIMATE);
+    w->plan_hess_help = fftw_plan_many_dft(1, &N, N, w->A_DFT, &N, 1, N, w->A_DFT,
+                                           &N, 1, N, FFTW_BACKWARD, FFTW_ESTIMATE);
     return s;
 }
 
@@ -214,8 +213,8 @@ void nml_free_solver(NML_solver *solver)
     free(solver);
 }
 
-int nml_solve(NML_solver *solver, const double complex *Z, int K,
-              NML_result *result, int verbose)
+int nml_solve(NML_solver *solver, const double complex *Z, int K, NML_result *result,
+              int verbose)
 {
     Timer timer;
     clock_gettime(CLOCK_MONOTONIC, &timer.start);

@@ -21,8 +21,8 @@ void compute_derivatives_packed(NML_solver *solver)
 
     /* compute A = R*(R'*L), where R is lower triangular. Store it in w->RHL. */
     cblas_ztrmm(CblasColMajor, CblasLeft, CblasLower, CblasNoTrans, CblasNonUnit,
-                n_plus_one, n_plus_one, &one, w->full_chol_toep, n_plus_one,
-                w->RHL, n_plus_one);
+                n_plus_one, n_plus_one, &one, w->full_chol_toep, n_plus_one, w->RHL,
+                n_plus_one);
 
     /* compute DFT of A */
     pad_with_zeros(w->RHL, w->A_DFT, n_plus_one, n_plus_one, N);
@@ -58,13 +58,15 @@ void compute_derivatives_packed(NML_solver *solver)
         w->grad[i + n] = -cimag(w->grad_help[i]);
     }
 
-    /* F = R_DFT*R_DFT^H, complex-valued Hermitian matrix stored as lower triangular */
-    cblas_zherk(CblasColMajor, CblasLower, CblasNoTrans, N, n_plus_one, 1,
-                w->R_DFT, N, 0, w->F, N);
+    /* F = R_DFT*R_DFT^H, complex-valued Hermitian matrix stored as lower triangular
+     */
+    cblas_zherk(CblasColMajor, CblasLower, CblasNoTrans, N, n_plus_one, 1, w->R_DFT,
+                N, 0, w->F, N);
 
-    /* G = A_DFT*A_DFT^H, complex-valued Hermitian matrix stored as lower triangular */
-    cblas_zherk(CblasColMajor, CblasLower, CblasNoTrans, N, n_plus_one, 1,
-                w->A_DFT, N, 0, w->G, N);
+    /* G = A_DFT*A_DFT^H, complex-valued Hermitian matrix stored as lower triangular
+     */
+    cblas_zherk(CblasColMajor, CblasLower, CblasNoTrans, N, n_plus_one, 1, w->A_DFT,
+                N, 0, w->G, N);
 
     /* hess_help = F.*G^T + F^T.*G - F.*F^T. */
     for (k = 0; k < N; k++)
