@@ -23,4 +23,4 @@ jobs:
         run: |
           valgrind --leak-check=full --show-leak-kinds=all \
                    --track-origins=yes -s --show-reachable=yes \
-                   --error-exitcode=1 build/c/tests/all_tests
+                   --error-exitcode=1 build/C/tests/all_tests
