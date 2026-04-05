@@ -48,7 +48,7 @@ int lev_dur_real(const double *y, double *L, double *sigma2, int p)
 int lev_dur_complex(const nml_complex *y, nml_complex *L, double *sigma2, int p)
 {
     /* initialization */
-    double complex kappa = -y[1] / y[0]; /* reflection coefficient */
+    nml_complex kappa = -y[1] / y[0]; /* reflection coefficient */
     if (cabs(kappa) > 1) return 1;
     sigma2[0] = creal(y[0]); /* y[0] is always real but we do like this for safety */
     sigma2[1] = creal(y[0]) -

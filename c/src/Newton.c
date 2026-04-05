@@ -22,11 +22,11 @@
 static double compute_obj(NML_workspace *w, int n_plus_one)
 {
     double obj = 0;
-    double complex one = 1;
+    nml_complex one = 1;
 
     /* compute w->RHL = R^H*L, where R is lower triangular and L is treated as a
        full matrix (despite L being lower triangular). */
-    memcpy(w->RHL, w->L_full, sizeof(double complex) * n_plus_one * n_plus_one);
+    memcpy(w->RHL, w->L_full, sizeof(nml_complex) * n_plus_one * n_plus_one);
     tri_to_full(w->full_chol_toep, w->chol_toep, n_plus_one);
     cblas_ztrmm(CblasColMajor, CblasLeft, CblasLower, CblasConjTrans, CblasNonUnit,
                 n_plus_one, n_plus_one, &one, w->full_chol_toep, n_plus_one, w->RHL,
@@ -45,16 +45,10 @@ static double compute_obj(NML_workspace *w, int n_plus_one)
 }
 
 /* Convergence if Newton decrement < tol */
-static int has_converged(NML_workspace *w, int two_n_plus_one, double tol,
-                         int verbose)
+static int has_converged(NML_workspace *w, int two_n_plus_one, double tol)
 {
     double newton_dec = cblas_ddot(two_n_plus_one, w->grad, 1, w->neg_dir, 1);
     w->grad_norm = cblas_dnrm2(two_n_plus_one, w->grad, 1);
-    if (verbose)
-    {
-        printf("grad_norm/obj: %.6e \t %.6f \n", w->grad_norm, w->obj);
-    }
-
     return (newton_dec < tol);
 }
 
@@ -133,6 +127,12 @@ void Newton(NML_solver *solver, NML_result *result)
     /* Compute objective value */
     w->obj = compute_obj(w, n_plus_one);
 
+    if (solver->verbose)
+    {
+        printf(" iter | objective      | grad norm    | step size\n");
+        printf("------+----------------+--------------+----------\n");
+    }
+
     for (i = 0; i < max_iter; i++)
     {
         /* compute gradient and Hessian */
@@ -148,13 +148,6 @@ void Newton(NML_solver *solver, NML_result *result)
             if (info == 0)
             {
                 break;
-            }
-
-            if (solver->verbose)
-            {
-                printf(
-                    "iter %i. Hessian not PD. Adding multiple of the identity. \n ",
-                    i);
             }
 
             result->num_of_hess_chol_fails += 1;
@@ -184,13 +177,24 @@ void Newton(NML_solver *solver, NML_result *result)
         cblas_dtpsv(CblasColMajor, CblasLower, CblasTrans, CblasNonUnit,
                     two_n_plus_one, w->chol_hess_packed, w->neg_dir, 1);
 
-        if (has_converged(w, two_n_plus_one, tol, solver->verbose))
+        if (has_converged(w, two_n_plus_one, tol))
         {
+            if (solver->verbose)
+            {
+                printf(" %4d | %14.6e | %12.4e |         -\n", i, w->obj,
+                       w->grad_norm);
+            }
             break;
         }
 
         /* compute step size. chol_toep and w->obj are updated. */
         compute_stepsize(w, n, n_plus_one, two_n_plus_one, beta, alpha);
+
+        if (solver->verbose)
+        {
+            printf(" %4d | %14.6e | %12.4e | %9.4f\n", i, w->obj, w->grad_norm,
+                   w->step_size);
+        }
 
         /* update iterate */
         cblas_daxpy(two_n_plus_one, -w->step_size, w->neg_dir, 1, w->xy, 1);

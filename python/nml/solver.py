@@ -121,14 +121,14 @@ def solve(Z, tol=1e-8, beta=0.8, alpha=0.05, verbose=False, max_iter=200):
     result.x = ctypes.cast(x_buf, ctypes.POINTER(ctypes.c_double))
     result.y = ctypes.cast(y_buf, ctypes.POINTER(ctypes.c_double))
 
-    ret = lib.solve(
+    ret = lib.nml_solve(
         solver_ptr,
         Z_data.ctypes.data_as(ctypes.c_void_p),
         K, ctypes.byref(result), int(verbose),
     )
 
     if ret != 0:
-        lib.free_solver(solver_ptr)
+        lib.nml_free_solver(solver_ptr)
         raise RuntimeError(f"NML solver returned error code {ret}")
 
     x = np.ctypeslib.as_array(result.x, shape=(n + 1,)).copy()
@@ -145,6 +145,6 @@ def solve(Z, tol=1e-8, beta=0.8, alpha=0.05, verbose=False, max_iter=200):
         "num_hess_chol_fails": result.num_of_hess_chol_fails,
     }
 
-    lib.free_solver(solver_ptr)
+    lib.nml_free_solver(solver_ptr)
 
     return out

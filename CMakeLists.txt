@@ -74,6 +74,7 @@ endif()
 add_library(nml ${NML_SOURCES})
 set_property(TARGET nml PROPERTY POSITION_INDEPENDENT_CODE ON)
 
+target_compile_definitions(nml PRIVATE NML_VERSION="${PROJECT_VERSION}")
 if(HAS_LAPACKE)
     target_compile_definitions(nml PUBLIC NML_HAS_LAPACKE)
 endif()

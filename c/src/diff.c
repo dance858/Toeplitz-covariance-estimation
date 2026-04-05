@@ -18,7 +18,7 @@ void compute_derivatives_packed(NML_solver *solver)
     /* DFT of chol_toep. */
     pad_with_zeros(w->full_chol_toep, w->R_DFT, n_plus_one, n_plus_one, N);
     fftw_execute_dft(w->plan_R_DFT, w->R_DFT, w->R_DFT);
-    double complex one = 1;
+    nml_complex one = 1;
 
     /* compute A = R*(R'*L), where R is lower triangular. Store it in w->RHL. */
     cblas_ztrmm(CblasColMajor, CblasLeft, CblasLower, CblasNoTrans, CblasNonUnit,
@@ -30,8 +30,8 @@ void compute_derivatives_packed(NML_solver *solver)
     fftw_execute_dft(w->plan_A_DFT, w->A_DFT, w->A_DFT);
 
     /* compute quantity that should be IFFT:ed to obtain the gradient */
-    double complex Rik, Aik;
-    memset(w->grad_help, 0, N * sizeof(double complex));
+    nml_complex Rik, Aik;
+    memset(w->grad_help, 0, N * sizeof(nml_complex));
     for (k = 0; k < n_plus_one; k++)
     {
         for (i = 0; i < N; i++)
@@ -47,7 +47,7 @@ void compute_derivatives_packed(NML_solver *solver)
     fftw_execute(w->plan_grad_help);
 
     /* correct scaling */
-    complex double alpha = 2.0 / N;
+    nml_complex alpha = 2.0 / N;
     cblas_zscal(N, &alpha, w->grad_help, 1);
 
     /* parse grad_help to obtain the true gradient */
@@ -66,13 +66,13 @@ void compute_derivatives_packed(NML_solver *solver)
     cblas_zherk(CblasColMajor, CblasLower, CblasNoTrans, N, n_plus_one, 1, w->A_DFT,
                 N, 0, w->G, N);
 
-    /* hess_help = F.*G^T + F^T.*G - F.*F^T. */
+    /* hess_help = F .* G^T + F^T .* G - F .* F^T */
     for (k = 0; k < N; k++)
     {
         for (i = k; i < N; i++)
         {
-            double complex Fik = w->F[i + k * N];
-            double complex Gik = w->G[i + k * N];
+            nml_complex Fik = w->F[i + k * N];
+            nml_complex Gik = w->G[i + k * N];
             w->hess_help[i + k * N] =
                 2 * (creal(Fik) * creal(Gik) + cimag(Fik) * cimag(Gik)) -
                 creal(Fik) * creal(Fik) - cimag(Fik) * cimag(Fik);
