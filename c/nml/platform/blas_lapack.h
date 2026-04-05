@@ -8,10 +8,6 @@
 #include <cblas.h>
 #endif
 
-#ifdef NML_HAS_LAPACKE
-#include <lapacke.h>
-#else
 #include "lapacke_compat.h"
-#endif
 
 #endif

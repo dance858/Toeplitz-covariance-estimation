@@ -12,23 +12,14 @@ endif()
 if(APPLE)
     find_library(ACCELERATE_FRAMEWORK Accelerate REQUIRED)
     set(BLAS_LAPACK_LIBS ${ACCELERATE_FRAMEWORK})
-    set(HAS_LAPACKE FALSE)
 elseif(MSVC)
     find_package(OpenBLAS CONFIG REQUIRED)
     find_package(clapack CONFIG REQUIRED)
     set(BLAS_LAPACK_LIBS OpenBLAS::OpenBLAS lapack)
-    set(HAS_LAPACKE FALSE)
 else()
     find_package(BLAS REQUIRED)
     find_package(LAPACK REQUIRED)
-    find_library(LAPACKE_LIB NAMES lapacke)
-    if(LAPACKE_LIB)
-        set(BLAS_LAPACK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${LAPACKE_LIB})
-        set(HAS_LAPACKE TRUE)
-    else()
-        set(BLAS_LAPACK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-        set(HAS_LAPACKE FALSE)
-    endif()
+    set(BLAS_LAPACK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 endif()
 
 # --- FFTW3 ---
@@ -67,18 +58,13 @@ set(NML_SOURCES
     c/src/levinson_durbin.c
     c/src/diff.c
     c/src/utils.c
+    c/src/lapacke_compat.c
 )
-if(NOT HAS_LAPACKE)
-    list(APPEND NML_SOURCES c/src/lapacke_compat.c)
-endif()
 
 add_library(nml ${NML_SOURCES})
 set_property(TARGET nml PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_compile_definitions(nml PRIVATE NML_VERSION="${PROJECT_VERSION}")
-if(HAS_LAPACKE)
-    target_compile_definitions(nml PUBLIC NML_HAS_LAPACKE)
-endif()
 
 target_include_directories(nml
     PUBLIC

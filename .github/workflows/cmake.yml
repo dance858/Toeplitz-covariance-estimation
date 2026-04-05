@@ -19,7 +19,7 @@ jobs:
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux'
-      run: sudo apt-get update && sudo apt-get install -y libopenblas-dev liblapacke-dev libfftw3-dev
+      run: sudo apt-get update && sudo apt-get install -y libopenblas-dev libfftw3-dev
 
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
