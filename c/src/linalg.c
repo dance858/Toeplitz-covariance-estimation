@@ -109,7 +109,7 @@ void hermitian_conj(double complex *A, int nrows)
         A[k + k * nrows] = conj(A[k + k * nrows]);
         for (int i = k + 1; i < nrows; i++)
         {
-            const double complex temp = A[i + k * nrows];
+            double complex temp = A[i + k * nrows];
             A[i + k * nrows] = conj(A[k + i * nrows]);
             A[k + i * nrows] = conj(temp);
         }

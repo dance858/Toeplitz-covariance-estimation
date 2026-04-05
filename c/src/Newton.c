@@ -22,7 +22,7 @@
 static double compute_obj(NML_work *w)
 {
     double obj = 0;
-    const double complex one = 1;
+    double complex one = 1;
 
     /* compute w->RHL = R^H*L, where R is lower triangular and L is treated as a
        full matrix (despite L being lower triangular). */
@@ -48,7 +48,7 @@ static double compute_obj(NML_work *w)
 /* Convergence if Newton decrement < tol */
 static int has_converged(NML_work *w)
 {
-    const double newton_dec =
+    double newton_dec =
         cblas_ddot(w->two_n_plus_one, w->grad, 1, w->neg_dir, 1);
     if (w->verbose)
     {
@@ -81,14 +81,16 @@ static void compute_stepsize(NML_work *w)
                       (w->xy[w->n + i] - w->step_size * w->neg_dir[w->n + i]) * I;
         }
 
+        /* status equal to 1 indicates that the factorization failed */
         status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, w->n);
 
     } while (status == 1);
 
+    /* scale w->chol_toep so T(x, y)^{-1} = (w->chol_toep)*(w->chol_toep)^H */
     lower_tri_diag_isqrt_mult(w->n_plus_one, w->sigma2, w->chol_toep);
 
     /* backtrack until descent condition is satisfied */
-    const double dir_der = -cblas_ddot(w->two_n_plus_one, w->grad, 1, w->neg_dir, 1);
+    double dir_der = -cblas_ddot(w->two_n_plus_one, w->grad, 1, w->neg_dir, 1); /* directional derivative */
 
     while (1)
     {
@@ -119,10 +121,12 @@ void Newton(NML_work *w, NML_out *output)
     int unused_ifail;
     double unused_eigvec;
 
+    /* Compute objective value */
     w->obj = compute_obj(w);
 
     for (i = 0; i < w->max_iter; i++)
     {
+        /* compute gradient and Hessian */
         compute_derivatives_packed(w);
 
         /* Cholesky factorization of Hessian, modify it if necessary */
@@ -163,7 +167,8 @@ void Newton(NML_work *w, NML_out *output)
             }
         }
 
-        /* compute Newton direction (negative direction stored in w->neg_dir) */
+        /* compute Newton direction. After this step the NEGATIVE of the
+           direction is stored in w->neg_dir. */
         memcpy(w->neg_dir, w->grad, sizeof(double) * w->two_n_plus_one);
         cblas_dtpsv(CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
                     w->two_n_plus_one, w->chol_hess_packed, w->neg_dir, 1);
@@ -175,11 +180,14 @@ void Newton(NML_work *w, NML_out *output)
             break;
         }
 
+        /* compute step size. chol_toep and w->obj are updated. */
         compute_stepsize(w);
 
+        /* update iterate */
         cblas_daxpy(w->two_n_plus_one, -w->step_size, w->neg_dir, 1, w->xy, 1);
     }
 
+    /* store output */
     output->obj = w->obj;
     output->grad_norm = w->grad_norm;
     output->iter = i;
