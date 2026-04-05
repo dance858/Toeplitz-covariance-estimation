@@ -16,9 +16,11 @@ typedef double _Complex nml_complex;
 #define cimag(z) __imag__(z)
 #define cabs(z) __builtin_cabs(z)
 #define conj(z) __builtin_conj(z)
-#undef I
-#define I _Complex_I
 #endif
+
+/* Platform-independent double complex imaginary unit. Avoids the Windows
+   issue where I is _Fcomplex (float). */
+#define NML_I ((nml_complex){0.0, 1.0})
 
 /* FFTW on Windows defines fftw_complex as double[2], not _Complex double.
    They are layout-compatible, so a cast is safe. On non-Windows platforms

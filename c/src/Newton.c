@@ -72,7 +72,7 @@ static void compute_stepsize(NML_workspace *w, int n, int n_plus_one,
         for (i = 1; i < n_plus_one; i++)
         {
             w->z[i] = (w->xy[i] - w->step_size * w->neg_dir[i]) -
-                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * I;
+                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * NML_I;
         }
 
         /* status equal to 1 indicates that the factorization failed */
@@ -100,7 +100,7 @@ static void compute_stepsize(NML_workspace *w, int n, int n_plus_one,
         for (i = 1; i < n_plus_one; i++)
         {
             w->z[i] = (w->xy[i] - w->step_size * w->neg_dir[i]) -
-                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * I;
+                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * NML_I;
         }
         status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, n);
         lower_tri_diag_isqrt_mult(n_plus_one, w->sigma2, w->chol_toep);
