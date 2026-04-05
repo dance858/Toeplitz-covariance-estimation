@@ -19,44 +19,43 @@
    computed:
             T(x, y)^{-1} = chol_toep*diag(sigma2)^{-1}*chol_toep^H.
 */
-static double compute_obj(NML_work *w)
+static double compute_obj(NML_workspace *w, int n_plus_one)
 {
     double obj = 0;
     double complex one = 1;
 
     /* compute w->RHL = R^H*L, where R is lower triangular and L is treated as a
        full matrix (despite L being lower triangular). */
-    memcpy(w->RHL, w->L_full,
-           sizeof(double complex) * (w->n_plus_one) * (w->n_plus_one));
-    tri_to_full(w->full_chol_toep, w->chol_toep, w->n_plus_one);
+    memcpy(w->RHL, w->L_full, sizeof(double complex) * n_plus_one * n_plus_one);
+    tri_to_full(w->full_chol_toep, w->chol_toep, n_plus_one);
     cblas_ztrmm(CblasColMajor, CblasLeft, CblasLower, CblasConjTrans, CblasNonUnit,
-                w->n_plus_one, w->n_plus_one, &one, w->full_chol_toep, w->n_plus_one,
-                w->RHL, w->n_plus_one);
+                n_plus_one, n_plus_one, &one, w->full_chol_toep, n_plus_one, w->RHL,
+                n_plus_one);
 
     /* compute Tr(T(x, y)^{-1} S) */
-    obj += cblas_dznrm2((w->n_plus_one) * (w->n_plus_one), w->RHL, 1);
+    obj += cblas_dznrm2(n_plus_one * n_plus_one, w->RHL, 1);
     obj *= obj;
 
     /* compute log det T(x, y) */
-    for (int i = 0; i < w->n_plus_one; i++)
+    for (int i = 0; i < n_plus_one; i++)
     {
-        obj += log((w->sigma2)[i]);
+        obj += log(w->sigma2[i]);
     }
     return obj;
 }
 
 /* Convergence if Newton decrement < tol */
-static int has_converged(NML_work *w)
+static int has_converged(NML_workspace *w, int two_n_plus_one, double tol,
+                         int verbose)
 {
-    double newton_dec =
-        cblas_ddot(w->two_n_plus_one, w->grad, 1, w->neg_dir, 1);
-    w->grad_norm = cblas_dnrm2(w->two_n_plus_one, w->grad, 1);
-    if (w->verbose)
+    double newton_dec = cblas_ddot(two_n_plus_one, w->grad, 1, w->neg_dir, 1);
+    w->grad_norm = cblas_dnrm2(two_n_plus_one, w->grad, 1);
+    if (verbose)
     {
         printf("grad_norm/obj: %.6e \t %.6f \n", w->grad_norm, w->obj);
     }
 
-    return (newton_dec < w->tol);
+    return (newton_dec < tol);
 }
 
 /* Computes the step size.
@@ -64,133 +63,143 @@ static int has_converged(NML_work *w)
     NOTE: When this function is called, w->neg_dir must contain the NEGATIVE
           search direction.
 */
-static void compute_stepsize(NML_work *w)
+static void compute_stepsize(NML_workspace *w, int n, int n_plus_one,
+                             int two_n_plus_one, double beta, double alpha)
 {
-    w->step_size = 1 / (w->beta); /* corresponds to initial step size 1 */
+    w->step_size = 1 / beta; /* corresponds to initial step size 1 */
     int status, i;
 
     /* backtrack to ensure that the new iterate is in dom f */
     do
     {
-        w->step_size *= w->beta;
+        w->step_size *= beta;
 
         w->z[0] = 2 * (w->xy[0] - w->step_size * w->neg_dir[0]);
-        for (i = 1; i < w->n_plus_one; i++)
+        for (i = 1; i < n_plus_one; i++)
         {
             w->z[i] = (w->xy[i] - w->step_size * w->neg_dir[i]) -
-                      (w->xy[w->n + i] - w->step_size * w->neg_dir[w->n + i]) * I;
+                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * I;
         }
 
         /* status equal to 1 indicates that the factorization failed */
-        status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, w->n);
+        status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, n);
 
     } while (status == 1);
 
     /* scale w->chol_toep so T(x, y)^{-1} = (w->chol_toep)*(w->chol_toep)^H */
-    lower_tri_diag_isqrt_mult(w->n_plus_one, w->sigma2, w->chol_toep);
+    lower_tri_diag_isqrt_mult(n_plus_one, w->sigma2, w->chol_toep);
 
     /* backtrack until descent condition is satisfied */
-    double dir_der = -cblas_ddot(w->two_n_plus_one, w->grad, 1, w->neg_dir, 1); /* directional derivative */
+    double dir_der = -cblas_ddot(two_n_plus_one, w->grad, 1, w->neg_dir, 1);
 
     while (1)
     {
-        w->new_obj = compute_obj(w);
+        w->new_obj = compute_obj(w, n_plus_one);
 
-        if (w->new_obj < w->obj + w->alpha * w->step_size * dir_der)
+        if (w->new_obj < w->obj + alpha * w->step_size * dir_der)
         {
             break;
         }
 
-        w->step_size *= w->beta;
+        w->step_size *= beta;
         w->z[0] = 2 * (w->xy[0] - w->step_size * w->neg_dir[0]);
-        for (i = 1; i < w->n_plus_one; i++)
+        for (i = 1; i < n_plus_one; i++)
         {
             w->z[i] = (w->xy[i] - w->step_size * w->neg_dir[i]) -
-                      (w->xy[w->n + i] - w->step_size * w->neg_dir[w->n + i]) * I;
+                      (w->xy[n + i] - w->step_size * w->neg_dir[n + i]) * I;
         }
-        status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, w->n);
-        lower_tri_diag_isqrt_mult(w->n_plus_one, w->sigma2, w->chol_toep);
+        status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, n);
+        lower_tri_diag_isqrt_mult(n_plus_one, w->sigma2, w->chol_toep);
     }
     w->obj = w->new_obj;
 }
 
-void Newton(NML_work *w, NML_out *output)
+void Newton(NML_solver *solver, NML_result *result)
 {
+    NML_workspace *w = &solver->work;
+    int n = solver->n;
+    int n_plus_one = solver->n_plus_one;
+    int two_n_plus_one = solver->two_n_plus_one;
+    double tol = solver->settings.tol;
+    double beta = solver->settings.beta;
+    double alpha = solver->settings.alpha;
+    int max_iter = solver->settings.max_iter;
+
     int i, k, info;
     int num_evals_found;
     int unused_ifail;
     double unused_eigvec;
 
     /* Compute objective value */
-    w->obj = compute_obj(w);
+    w->obj = compute_obj(w, n_plus_one);
 
-    for (i = 0; i < w->max_iter; i++)
+    for (i = 0; i < max_iter; i++)
     {
         /* compute gradient and Hessian */
-        compute_derivatives_packed(w);
+        compute_derivatives_packed(solver);
 
         /* Cholesky factorization of Hessian, modify it if necessary */
         while (1)
         {
             memcpy(w->chol_hess_packed, w->hess_packed,
-                   sizeof(double) * w->n_plus_one * w->two_n_plus_one);
-            info = LAPACKE_dpptrf(LAPACK_COL_MAJOR, 'L', w->two_n_plus_one,
+                   sizeof(double) * n_plus_one * two_n_plus_one);
+            info = LAPACKE_dpptrf(LAPACK_COL_MAJOR, 'L', two_n_plus_one,
                                   w->chol_hess_packed);
             if (info == 0)
             {
                 break;
             }
 
-            if (w->verbose)
+            if (solver->verbose)
             {
                 printf(
                     "iter %i. Hessian not PD. Adding multiple of the identity. \n ",
                     i);
             }
 
-            output->num_of_hess_chol_fails += 1;
+            result->num_of_hess_chol_fails += 1;
 
             /* compute eigenvalues of packed matrix (overwrites, so copy first) */
             memcpy(w->chol_hess_packed, w->hess_packed,
-                   sizeof(double) * w->n_plus_one * w->two_n_plus_one);
-            info = LAPACKE_dspevx(LAPACK_COL_MAJOR, 'N', 'A', 'L', w->two_n_plus_one,
+                   sizeof(double) * n_plus_one * two_n_plus_one);
+            info = LAPACKE_dspevx(LAPACK_COL_MAJOR, 'N', 'A', 'L', two_n_plus_one,
                                   w->chol_hess_packed, 0.0, 0.0, 0.0, 0.0, -1.0,
                                   &num_evals_found, w->hess_evals, &unused_eigvec,
                                   1.0, &unused_ifail);
 
             w->hess_evals[0] = MIN(-0.1, w->hess_evals[0]) * 1.05;
             /* add multiple of the identity to Hessian */
-            for (k = 0; k < w->two_n_plus_one; k++)
+            for (k = 0; k < two_n_plus_one; k++)
             {
-                w->hess_packed[k * (w->two_n_plus_one + 1) - k * (k + 1) / 2] -=
+                w->hess_packed[k * (two_n_plus_one + 1) - k * (k + 1) / 2] -=
                     w->hess_evals[0];
             }
         }
 
         /* compute Newton direction. After this step the NEGATIVE of the
            direction is stored in w->neg_dir. */
-        memcpy(w->neg_dir, w->grad, sizeof(double) * w->two_n_plus_one);
+        memcpy(w->neg_dir, w->grad, sizeof(double) * two_n_plus_one);
         cblas_dtpsv(CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                    w->two_n_plus_one, w->chol_hess_packed, w->neg_dir, 1);
+                    two_n_plus_one, w->chol_hess_packed, w->neg_dir, 1);
         cblas_dtpsv(CblasColMajor, CblasLower, CblasTrans, CblasNonUnit,
-                    w->two_n_plus_one, w->chol_hess_packed, w->neg_dir, 1);
+                    two_n_plus_one, w->chol_hess_packed, w->neg_dir, 1);
 
-        if (has_converged(w))
+        if (has_converged(w, two_n_plus_one, tol, solver->verbose))
         {
             break;
         }
 
         /* compute step size. chol_toep and w->obj are updated. */
-        compute_stepsize(w);
+        compute_stepsize(w, n, n_plus_one, two_n_plus_one, beta, alpha);
 
         /* update iterate */
-        cblas_daxpy(w->two_n_plus_one, -w->step_size, w->neg_dir, 1, w->xy, 1);
+        cblas_daxpy(two_n_plus_one, -w->step_size, w->neg_dir, 1, w->xy, 1);
     }
 
-    /* store output */
-    output->obj = w->obj;
-    output->grad_norm = w->grad_norm;
-    output->iter = i;
-    memcpy(output->x_sol, w->xy, sizeof(double) * (w->n + 1));
-    memcpy(output->y_sol, w->xy + w->n + 1, sizeof(double) * w->n);
+    /* store result */
+    result->obj = w->obj;
+    result->grad_norm = w->grad_norm;
+    result->iter = i;
+    memcpy(result->x, w->xy, sizeof(double) * (n + 1));
+    memcpy(result->y, w->xy + n + 1, sizeof(double) * n);
 }

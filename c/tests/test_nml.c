@@ -1,5 +1,4 @@
-#include "nml/NML_solve.h"
-#include "nml/NML_work.h"
+#include "nml/NML_solver.h"
 #include "nml/levinson_durbin.h"
 #include <fftw3.h>
 #include <math.h>
@@ -186,22 +185,24 @@ static int test_nml_solver(void)
         }
     }
 
-    /* Call NML solver */
-    NML_out output;
-    int ret = NML(Z, n, K, &output, 1e-8, 0.8, 0.05, 0, 200);
-    ASSERT(ret == 0, "NML should return 0");
-    ASSERT(output.iter < 50, "should converge in < 50 iterations");
-    ASSERT(isfinite(output.obj), "objective should be finite");
-    ASSERT(output.grad_norm < 1e-4, "gradient norm should be small at convergence");
+    /* Call solver */
+    NML_solver *solver = nml_new_solver(n, 1e-8, 0.8, 0.05, 200);
+    NML_result *result = nml_new_result(n);
+    int ret = nml_solve(solver, Z, K, result, 0);
+    ASSERT(ret == 0, "solve should return 0");
+    ASSERT(result->iter < 50, "should converge in < 50 iterations");
+    ASSERT(isfinite(result->obj), "objective should be finite");
+    ASSERT(result->grad_norm < 1e-4, "gradient norm should be small at convergence");
 
-    /* x_sol[0] stores half the diagonal: should be close to 0.5 (= 1.0/2) */
-    ASSERT(fabs(output.x_sol[0] - 0.5) < 0.15,
-           "x_sol[0] should be close to 0.5 (half the true diagonal)");
+    /* x[0] stores half the diagonal: should be close to 0.5 (= 1.0/2) */
+    ASSERT(fabs(result->x[0] - 0.5) < 0.15,
+           "x[0] should be close to 0.5 (half the true diagonal)");
 
-    /* x_sol[1] should be close to rho = 0.5 */
-    ASSERT(fabs(output.x_sol[1] - rho) < 0.15, "x_sol[1] should be close to rho");
+    /* x[1] should be close to rho = 0.5 */
+    ASSERT(fabs(result->x[1] - rho) < 0.15, "x[1] should be close to rho");
 
-    NML_free_output(&output);
+    nml_free_result(result);
+    nml_free_solver(solver);
     free(Z);
     return 0;
 }

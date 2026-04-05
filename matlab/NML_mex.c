@@ -1,7 +1,6 @@
 #include "matrix.h"
 #include "mex.h"
-#include "nml/NML_solve.h"
-#include "nml/NML_work.h"
+#include "nml/NML_solver.h"
 #include <complex.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,13 +48,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             Z[i] = real_Z[i] + I * imag_Z[i];
         }
 
-        /* -------------------------------------------
-                 Call NML implemented in c
-           ------------------------------------------- */
-
-        /* prepare output */
-        NML_out *output = malloc(sizeof(*output));
-        int res = NML(Z, n, K, output, tol, beta, alpha, verbose, max_iter);
+        /* Call solver */
+        NML_solver *solver = nml_new_solver(n, tol, beta, alpha, max_iter);
+        NML_result *result = nml_new_result(n);
+        int res = nml_solve(solver, Z, K, result, verbose);
         if (res != 0)
         {
             mexErrMsgTxt("Return error. Please report this to the developer.");
@@ -63,51 +59,50 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         }
 
         double *ptr;
-        /*output x_sol */
+        /* x */
         plhs[0] = mxCreateNumericMatrix(n + 1, 1, mxDOUBLE_CLASS, mxREAL);
         ptr = mxGetPr(plhs[0]);
-        memcpy(ptr, output->x_sol, sizeof(double) * (n + 1));
+        memcpy(ptr, result->x, sizeof(double) * (n + 1));
 
-        /* output y_sol */
+        /* y */
         plhs[1] = mxCreateNumericMatrix(n, 1, mxDOUBLE_CLASS, mxREAL);
         ptr = mxGetPr(plhs[1]);
-        memcpy(ptr, output->y_sol, sizeof(double) * n);
+        memcpy(ptr, result->y, sizeof(double) * n);
 
-        /* output gradient norm  */
+        /* gradient norm */
         plhs[2] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
         ptr = mxGetPr(plhs[2]);
-        *ptr = output->grad_norm;
+        *ptr = result->grad_norm;
 
-        /* output objective value */
+        /* objective value */
         plhs[3] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
         ptr = mxGetPr(plhs[3]);
-        *ptr = output->obj;
+        *ptr = result->obj;
 
-        /* output total time */
+        /* solve time */
         plhs[4] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
         ptr = mxGetPr(plhs[4]);
-        *ptr = output->total_time;
+        *ptr = result->solve_time;
 
-        /* output number of iterations */
+        /* number of iterations */
         plhs[5] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
         ptr = mxGetPr(plhs[5]);
-        *ptr = output->iter;
+        *ptr = result->iter;
 
-        /* output if diagonal initilization succeeded */
+        /* diagonal initialization succeeded */
         plhs[6] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
         ptr = mxGetPr(plhs[6]);
-        *ptr = output->diag_init_succeded;
+        *ptr = result->diag_init_succeeded;
 
-        /* output number of times Hessian was modified */
+        /* number of times Hessian was modified */
         plhs[7] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
         ptr = mxGetPr(plhs[7]);
-        *ptr = output->num_of_hess_chol_fails;
+        *ptr = result->num_of_hess_chol_fails;
 
-        /* deallocate data matrix and output memory that is allocated inside NML */
+        /* deallocate */
         free(Z);
-        free(output->x_sol);
-        free(output->y_sol);
-        free(output);
+        nml_free_result(result);
+        nml_free_solver(solver);
     }
     else
     {
