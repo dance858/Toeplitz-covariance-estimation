@@ -31,20 +31,24 @@ crb_sto_uc = zeros(1, length(samples));
 average_solve_time = 0;
 average_iter = 0;
 
+% Create solver
+n = m - 1;
+solver = nml_new_solver(n, tol, beta, alpha, max_iter);
+
 for ii = 1:length(samples)
     K = samples(ii);
     fprintf("Simulating K = %i \n", K)
-    for run = 1:MC_runs 
+    for run = 1:MC_runs
         % Generate data
         [Y, true_cov] = generate_ula_data(power_source, sig2, d, m, M, K, ...
               wavelength, theta_rad);
         [dim, K] = size(Y);
         n = dim - 1;
-        
+
         % Estimate covariance matrix.
         sample_cov = 1/K*(Y*Y');
         [x, y, grad_norm, obj, solve_time, iter] = ...
-            NML(real(Y(:)), imag(Y(:)), n, K, verbose, tol, beta, alpha, max_iter);
+            nml_solve(solver, Y, verbose);
         NML_cov = toeplitz([2*x(1); x(2:end) + 1i*y]);
 
         average_solve_time = average_solve_time + solve_time;
@@ -66,6 +70,9 @@ for ii = 1:length(samples)
 end
 average_iter = average_iter/(MC_runs*length(samples));
 average_solve_time = average_solve_time/(MC_runs*length(samples));
+
+% Free solver
+nml_free_solver(solver);
 
 %%
 figure()

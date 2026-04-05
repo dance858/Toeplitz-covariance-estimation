@@ -88,8 +88,15 @@ See `python/examples/demo.py` for a full example.
 
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/>
 ```matlab
-[x, y, grad_norm, obj, solve_time, iter] = NML(real(Z(:)), imag(Z(:)), n, K, verbose, tol, beta, alpha, max_iter);
+% Create solver for dimension n+1
+solver = nml_new_solver(n, tol, beta, alpha, max_iter);
+
+% Solve: Z is a (n+1) x K complex data matrix
+[x, y, grad_norm, obj, solve_time, iter] = nml_solve(solver, Z, verbose);
 R_hat = toeplitz([2*x(1); x(2:end) + 1i*y]);
+
+% Free solver
+nml_free_solver(solver);
 ```
 
 See `matlab/examples/demo.m` for a full example. Running `demo.m` results in the following figure:
