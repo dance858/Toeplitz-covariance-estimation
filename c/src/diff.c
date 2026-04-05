@@ -1,7 +1,7 @@
-#include "nml/diff.h"
-#include "nml/linalg.h"
+#include "diff.h"
+#include "linalg.h"
 #include "nml/platform/blas_lapack.h"
-#include "nml/utils.h"
+#include "utils.h"
 #include <complex.h>
 #include <fftw3.h>
 #include <string.h>

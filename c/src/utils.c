@@ -1,4 +1,4 @@
-#include "nml/utils.h"
+#include "utils.h"
 
 /* reverses a real-valued array of size N */
 void reverse_real(double *y, const int N)

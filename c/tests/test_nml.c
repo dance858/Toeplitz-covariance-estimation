@@ -9,26 +9,26 @@
 static int tests_run = 0;
 static int tests_passed = 0;
 
-#define ASSERT(cond, msg)                                                                \
-    do                                                                                   \
-    {                                                                                    \
-        if (!(cond))                                                                     \
-        {                                                                                \
-            printf("  FAIL: %s\n", msg);                                                 \
-            return 1;                                                                    \
-        }                                                                                \
+#define ASSERT(cond, msg)                                                           \
+    do                                                                              \
+    {                                                                               \
+        if (!(cond))                                                                \
+        {                                                                           \
+            printf("  FAIL: %s\n", msg);                                            \
+            return 1;                                                               \
+        }                                                                           \
     } while (0)
 
-#define RUN_TEST(fn)                                                                     \
-    do                                                                                   \
-    {                                                                                    \
-        tests_run++;                                                                     \
-        printf("Running %s ...\n", #fn);                                                 \
-        if (fn() == 0)                                                                   \
-        {                                                                                \
-            printf("  PASS\n");                                                          \
-            tests_passed++;                                                              \
-        }                                                                                \
+#define RUN_TEST(fn)                                                                \
+    do                                                                              \
+    {                                                                               \
+        tests_run++;                                                                \
+        printf("Running %s ...\n", #fn);                                            \
+        if (fn() == 0)                                                              \
+        {                                                                           \
+            printf("  PASS\n");                                                     \
+            tests_passed++;                                                         \
+        }                                                                           \
     } while (0)
 
 /* --------------------------------------------------------------------------
@@ -40,7 +40,7 @@ static int test_levinson_durbin_pd(void)
     int p = 3; /* dimension is p+1 = 4 */
     double y[] = {2.0, 0.5, 0.25, 0.125};
     double L[(3 + 1) * (3 + 2) / 2]; /* (p+1)*(p+2)/2 = 10 */
-    double sigma2[4];                 /* p+1 = 4 */
+    double sigma2[4];                /* p+1 = 4 */
 
     int status = lev_dur_real(y, L, sigma2, p);
     ASSERT(status == 0, "lev_dur_real should return 0 for PD matrix");
@@ -80,10 +80,10 @@ static double rand_normal(void)
 {
     /* Box-Muller transform using LCG */
     rng_state = rng_state * 6364136223846793005ULL + 1442695040888963407ULL;
-    double u1 = (double)(rng_state >> 33) / (double)(1ULL << 31);
+    double u1 = (double) (rng_state >> 33) / (double) (1ULL << 31);
     if (u1 < 1e-15) u1 = 1e-15;
     rng_state = rng_state * 6364136223846793005ULL + 1442695040888963407ULL;
-    double u2 = (double)(rng_state >> 33) / (double)(1ULL << 31);
+    double u2 = (double) (rng_state >> 33) / (double) (1ULL << 31);
     return sqrt(-2.0 * log(u1)) * cos(2.0 * 3.14159265358979323846 * u2);
 }
 
@@ -92,16 +92,15 @@ static double rand_normal(void)
    -------------------------------------------------------------------------- */
 static int test_nml_solver(void)
 {
-    int n = 3;          /* covariance dimension is n+1 = 4 */
-    int n1 = n + 1;     /* = 4 */
-    int K = 500;        /* number of samples */
+    int n = 3;      /* covariance dimension is n+1 = 4 */
+    int n1 = n + 1; /* = 4 */
+    int K = 500;    /* number of samples */
     double rho = 0.5;
 
     /* Build true Toeplitz covariance: R[i][j] = rho^|i-j| */
     double R[4][4];
     for (int i = 0; i < n1; i++)
-        for (int j = 0; j < n1; j++)
-            R[i][j] = pow(rho, abs(i - j));
+        for (int j = 0; j < n1; j++) R[i][j] = pow(rho, abs(i - j));
 
     /* Cholesky factor L (column-major, lower triangular)
        For this simple matrix, compute manually via the standard algorithm */
@@ -147,8 +146,7 @@ static int test_nml_solver(void)
            "x_sol[0] should be close to 0.5 (half the true diagonal)");
 
     /* x_sol[1] should be close to rho = 0.5 */
-    ASSERT(fabs(output.x_sol[1] - rho) < 0.15,
-           "x_sol[1] should be close to rho");
+    ASSERT(fabs(output.x_sol[1] - rho) < 0.15, "x_sol[1] should be close to rho");
 
     NML_free_output(&output);
     free(Z);

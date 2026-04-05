@@ -1,13 +1,12 @@
-#include "nml/Newton.h"
-#include "nml/diff.h"
+#include "Newton.h"
+#include "diff.h"
+#include "linalg.h"
 #include "nml/levinson_durbin.h"
-#include "nml/linalg.h"
 #include "nml/platform/blas_lapack.h"
-#include "nml/utils.h"
+#include "utils.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 #ifndef MIN
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -20,22 +19,13 @@
    computed:
             T(x, y)^{-1} = chol_toep*diag(sigma2)^{-1}*chol_toep^H.
 */
-double compute_obj(NML_work *w)
+static double compute_obj(NML_work *w)
 {
     double obj = 0;
-    int ii;
-    double complex one = 1;
+    const double complex one = 1;
 
     /* compute w->RHL = R^H*L, where R is lower triangular and L is treated as a
-       full matrix (despite L being lower triangular).
-
-       I could not find a BLAS routine for matrix-matrix mult A*B where A
-       is a triangular matrix stored in PACKED format. However, I did find
-       routines for packed triangular matrix-vector multiplication (CTPMV).
-       Maybe we can refactor these three lines into one single function with
-       for loops? If such a refactorization is made, note that it is necessary
-       to run tri_to_full before "pad_with_zeros" inside compute_derivatives.
-    */
+       full matrix (despite L being lower triangular). */
     memcpy(w->RHL, w->L_full,
            sizeof(double complex) * (w->n_plus_one) * (w->n_plus_one));
     tri_to_full(w->full_chol_toep, w->chol_toep, w->n_plus_one);
@@ -48,30 +38,18 @@ double compute_obj(NML_work *w)
     obj *= obj;
 
     /* compute log det T(x, y) */
-    for (ii = 0; ii < w->n_plus_one; ii++)
+    for (int i = 0; i < w->n_plus_one; i++)
     {
-        obj += log((w->sigma2)[ii]);
+        obj += log((w->sigma2)[i]);
     }
     return obj;
 }
 
-/* Convergence if ||grad||_2 < tol */
-int has_converged(NML_work *w)
-{
-    w->grad_norm = cblas_dnrm2(w->two_n_plus_one, w->grad, 1);
-
-    if (w->verbose)
-    {
-        printf("grad_norm/obj: %.6e \t %.6f \n", w->grad_norm, w->obj);
-    }
-
-    return (w->grad_norm < w->tol);
-}
-
 /* Convergence if Newton decrement < tol */
-int has_converged_new(NML_work *w)
+static int has_converged(NML_work *w)
 {
-    double newton_dec = cblas_ddot(w->two_n_plus_one, w->grad, 1, w->neg_dir, 1);
+    const double newton_dec =
+        cblas_ddot(w->two_n_plus_one, w->grad, 1, w->neg_dir, 1);
     if (w->verbose)
     {
         w->grad_norm = cblas_dnrm2(w->two_n_plus_one, w->grad, 1);
@@ -86,7 +64,7 @@ int has_converged_new(NML_work *w)
     NOTE: When this function is called, w->neg_dir must contain the NEGATIVE
           search direction.
 */
-void compute_stepsize(NML_work *w)
+static void compute_stepsize(NML_work *w)
 {
     w->step_size = 1 / (w->beta); /* corresponds to initial step size 1 */
     int status, i;
@@ -96,7 +74,6 @@ void compute_stepsize(NML_work *w)
     {
         w->step_size *= w->beta;
 
-        /* w-> stores the first column of T(x, y) */
         w->z[0] = 2 * (w->xy[0] - w->step_size * w->neg_dir[0]);
         for (i = 1; i < w->n_plus_one; i++)
         {
@@ -104,17 +81,14 @@ void compute_stepsize(NML_work *w)
                       (w->xy[w->n + i] - w->step_size * w->neg_dir[w->n + i]) * I;
         }
 
-        /* status equal to 1 indicates that the factorization failed */
         status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, w->n);
 
     } while (status == 1);
 
-    /* scale w->chol_toep so T(x, y)^{-1} = (w->chol_toep)*(w->chol_toep)^H */
     lower_tri_diag_isqrt_mult(w->n_plus_one, w->sigma2, w->chol_toep);
 
     /* backtrack until descent condition is satisfied */
-    double dir_der; /* directional derivative */
-    dir_der = -cblas_ddot(w->two_n_plus_one, w->grad, 1, w->neg_dir, 1);
+    const double dir_der = -cblas_ddot(w->two_n_plus_one, w->grad, 1, w->neg_dir, 1);
 
     while (1)
     {
@@ -138,26 +112,18 @@ void compute_stepsize(NML_work *w)
     w->obj = w->new_obj;
 }
 
-/* NOTE:  Assumes that w->chol_toep has been computed. */
 void Newton(NML_work *w, NML_out *output)
 {
     int i, k, info;
-    int num_of_found_evals;
-    int not_needed_1;
-    double not_needed_2;
+    int num_evals_found;
+    int unused_ifail;
+    double unused_eigvec;
 
-    /* Compute objective value */
     w->obj = compute_obj(w);
 
     for (i = 0; i < w->max_iter; i++)
     {
-        /* compute gradient and Hessian */
         compute_derivatives_packed(w);
-
-        /* check termination criteria */
-        // if (has_converged(w)){
-        //     break;
-        // }
 
         /* Cholesky factorization of Hessian, modify it if necessary */
         while (1)
@@ -171,7 +137,6 @@ void Newton(NML_work *w, NML_out *output)
                 break;
             }
 
-            /* factorization failed */
             if (w->verbose)
             {
                 printf(
@@ -180,14 +145,14 @@ void Newton(NML_work *w, NML_out *output)
             }
 
             output->num_of_hess_chol_fails += 1;
-            /* compute eigenvalues of packed matrix. Some arguments are not needed.
-            Overwrites so must first copy.  */
+
+            /* compute eigenvalues of packed matrix (overwrites, so copy first) */
             memcpy(w->chol_hess_packed, w->hess_packed,
                    sizeof(double) * w->n_plus_one * w->two_n_plus_one);
             info = LAPACKE_dspevx(LAPACK_COL_MAJOR, 'N', 'A', 'L', w->two_n_plus_one,
                                   w->chol_hess_packed, 0.0, 0.0, 0.0, 0.0, -1.0,
-                                  &num_of_found_evals, w->hess_evals, &not_needed_2,
-                                  1.0, &not_needed_1);
+                                  &num_evals_found, w->hess_evals, &unused_eigvec,
+                                  1.0, &unused_ifail);
 
             w->hess_evals[0] = MIN(-0.1, w->hess_evals[0]) * 1.05;
             /* add multiple of the identity to Hessian */
@@ -198,27 +163,23 @@ void Newton(NML_work *w, NML_out *output)
             }
         }
 
-        /* compute Newton direction. After this step the NEGATIVE of the
-           direction is stored in  w->neg_dir. */
+        /* compute Newton direction (negative direction stored in w->neg_dir) */
         memcpy(w->neg_dir, w->grad, sizeof(double) * w->two_n_plus_one);
         cblas_dtpsv(CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
                     w->two_n_plus_one, w->chol_hess_packed, w->neg_dir, 1);
         cblas_dtpsv(CblasColMajor, CblasLower, CblasTrans, CblasNonUnit,
                     w->two_n_plus_one, w->chol_hess_packed, w->neg_dir, 1);
 
-        if (has_converged_new(w))
+        if (has_converged(w))
         {
             break;
         }
 
-        /* compute step size. chol_toep and w->obj are updated. */
         compute_stepsize(w);
 
-        /* update iterate */
         cblas_daxpy(w->two_n_plus_one, -w->step_size, w->neg_dir, 1, w->xy, 1);
     }
 
-    /* store output */
     output->obj = w->obj;
     output->grad_norm = w->grad_norm;
     output->iter = i;
