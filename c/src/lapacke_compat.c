@@ -5,13 +5,8 @@
 #include "nml/platform/lapacke_compat.h"
 #include <stdlib.h>
 
-/* On Windows, OpenBLAS exports Fortran symbols without trailing underscore.
-   On Unix/macOS, the standard convention uses a trailing underscore. */
-#ifdef _WIN32
-#define LAPACK_GLOBAL(name) name
-#else
+/* Fortran name mangling: trailing underscore (gfortran/Accelerate convention) */
 #define LAPACK_GLOBAL(name) name##_
-#endif
 
 #ifdef __APPLE__
 #define ACCELERATE_NEW_LAPACK
