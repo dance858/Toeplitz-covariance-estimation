@@ -1,6 +1,7 @@
 #include "nml/NML_solve.h"
 #include "nml/NML_work.h"
 #include "nml/levinson_durbin.h"
+#include <fftw3.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -216,5 +217,6 @@ int main(void)
     RUN_TEST(test_nml_solver);
 
     printf("\n%d/%d tests passed.\n", tests_passed, tests_run);
+    fftw_cleanup();
     return (tests_passed == tests_run) ? 0 : 1;
 }
