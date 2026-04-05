@@ -16,7 +16,7 @@ if(APPLE)
 elseif(MSVC)
     find_package(OpenBLAS CONFIG REQUIRED)
     set(BLAS_LAPACK_LIBS OpenBLAS::OpenBLAS)
-    set(HAS_LAPACKE TRUE)
+    set(HAS_LAPACKE FALSE)
 else()
     find_package(BLAS REQUIRED)
     find_package(LAPACK REQUIRED)
@@ -67,7 +67,7 @@ set(NML_SOURCES
     c/src/diff.c
     c/src/utils.c
 )
-if(NOT HAS_LAPACKE)
+if(NOT HAS_LAPACKE AND NOT MSVC)
     list(APPEND NML_SOURCES c/src/lapacke_compat.c)
 endif()
 
