@@ -81,11 +81,13 @@ void compute_derivatives_packed(NML_solver *solver)
     }
 
     /* hess_help = (F .* G^T + F^T .* G - F .* F^T) * W */
-    fftw_execute_dft(w->plan_hess_help, NML_FFTW(w->hess_help), NML_FFTW(w->hess_help));
+    fftw_execute_dft(w->plan_hess_help, NML_FFTW(w->hess_help),
+                     NML_FFTW(w->hess_help));
     hermitian_conj(w->hess_help, N);
 
     /* hess_help = W^H*(F.*G^T + F^T.*G - F.*F^T)*W */
-    fftw_execute_dft(w->plan_hess_help, NML_FFTW(w->hess_help), NML_FFTW(w->hess_help));
+    fftw_execute_dft(w->plan_hess_help, NML_FFTW(w->hess_help),
+                     NML_FFTW(w->hess_help));
 
     /* correct scaling: 4/N^2 */
     alpha = 4.0 / (N * N);

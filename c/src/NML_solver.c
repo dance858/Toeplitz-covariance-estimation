@@ -66,9 +66,9 @@ static void init_guess(const nml_complex *Z_data, NML_solver *solver,
 
         /* IFFT of data points, scaled correctly */
         fftw_plan plan_Z_data = fftw_plan_many_dft(
-            1, &n_plus_one, solver->K, NML_FFTW(Z_copy), &n_plus_one, 1,
-            n_plus_one, NML_FFTW(Z_copy), &n_plus_one, 1, n_plus_one,
-            FFTW_BACKWARD, FFTW_ESTIMATE);
+            1, &n_plus_one, solver->K, NML_FFTW(Z_copy), &n_plus_one, 1, n_plus_one,
+            NML_FFTW(Z_copy), &n_plus_one, 1, n_plus_one, FFTW_BACKWARD,
+            FFTW_ESTIMATE);
         fftw_execute_dft(plan_Z_data, NML_FFTW(Z_copy), NML_FFTW(Z_copy));
 
         /* compute q of size (n+1) x 1, stored in z */
@@ -85,9 +85,8 @@ static void init_guess(const nml_complex *Z_data, NML_solver *solver,
         }
 
         /* compute FFT of q */
-        fftw_plan plan_q =
-            fftw_plan_dft_1d(n_plus_one, NML_FFTW(w->z), NML_FFTW(w->z),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
+        fftw_plan plan_q = fftw_plan_dft_1d(
+            n_plus_one, NML_FFTW(w->z), NML_FFTW(w->z), FFTW_FORWARD, FFTW_ESTIMATE);
         fftw_execute(plan_q);
 
         /* scale with 1/(K*(n+1)^2). After this operation, w->z stores the first
@@ -151,18 +150,18 @@ NML_solver *nml_new_solver(int n, double tol, double beta, double alpha,
     w->R_DFT = (nml_complex *) fftw_malloc(sizeof(nml_complex) * N * (n + 1));
     w->A_DFT = (nml_complex *) fftw_malloc(sizeof(nml_complex) * N * (n + 1));
 
-    w->plan_R_DFT =
-        fftw_plan_many_dft(1, &N, n + 1, NML_FFTW(w->R_DFT), &N, 1, N,
-                           NML_FFTW(w->R_DFT), &N, 1, N, FFTW_FORWARD, FFTW_ESTIMATE);
-    w->plan_A_DFT =
-        fftw_plan_many_dft(1, &N, n + 1, NML_FFTW(w->A_DFT), &N, 1, N,
-                           NML_FFTW(w->A_DFT), &N, 1, N, FFTW_FORWARD, FFTW_ESTIMATE);
+    w->plan_R_DFT = fftw_plan_many_dft(1, &N, n + 1, NML_FFTW(w->R_DFT), &N, 1, N,
+                                       NML_FFTW(w->R_DFT), &N, 1, N, FFTW_FORWARD,
+                                       FFTW_ESTIMATE);
+    w->plan_A_DFT = fftw_plan_many_dft(1, &N, n + 1, NML_FFTW(w->A_DFT), &N, 1, N,
+                                       NML_FFTW(w->A_DFT), &N, 1, N, FFTW_FORWARD,
+                                       FFTW_ESTIMATE);
     w->plan_grad_help =
         fftw_plan_dft_1d(N, NML_FFTW(w->grad_help), NML_FFTW(w->grad_help),
                          FFTW_BACKWARD, FFTW_ESTIMATE);
-    w->plan_hess_help =
-        fftw_plan_many_dft(1, &N, N, NML_FFTW(w->A_DFT), &N, 1, N,
-                           NML_FFTW(w->A_DFT), &N, 1, N, FFTW_BACKWARD, FFTW_ESTIMATE);
+    w->plan_hess_help = fftw_plan_many_dft(1, &N, N, NML_FFTW(w->A_DFT), &N, 1, N,
+                                           NML_FFTW(w->A_DFT), &N, 1, N,
+                                           FFTW_BACKWARD, FFTW_ESTIMATE);
     return s;
 }
 
