@@ -3,8 +3,7 @@
 #include <string.h>
 
 /* y = x + a*conj(reverse(x)). */
-void zaxpy_variant(int n, const nml_complex *a, const nml_complex *x,
-                   nml_complex *y)
+void zaxpy_variant(int n, const nml_complex *a, const nml_complex *x, nml_complex *y)
 {
     for (int i = 0; i < n; i++)
     {

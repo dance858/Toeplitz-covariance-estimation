@@ -47,9 +47,9 @@ static double compute_obj(NML_workspace *w, int n_plus_one)
 /* Convergence if Newton decrement < tol */
 static int has_converged(NML_workspace *w, int two_n_plus_one, double tol)
 {
-    double newton_dec = cblas_ddot(two_n_plus_one, w->grad, 1, w->neg_dir, 1);
+    w->newton_dec = cblas_ddot(two_n_plus_one, w->grad, 1, w->neg_dir, 1);
     w->grad_norm = cblas_dnrm2(two_n_plus_one, w->grad, 1);
-    return (newton_dec < tol);
+    return (w->newton_dec < tol);
 }
 
 /* Computes the step size.
@@ -129,8 +129,8 @@ void Newton(NML_solver *solver, NML_result *result)
 
     if (solver->verbose)
     {
-        printf(" iter | objective      | grad norm    | step size\n");
-        printf("------+----------------+--------------+----------\n");
+        printf(" iter | objective      | grad norm    | newton dec   | step size\n");
+        printf("------+----------------+--------------+--------------+----------\n");
     }
 
     for (i = 0; i < max_iter; i++)
@@ -181,8 +181,8 @@ void Newton(NML_solver *solver, NML_result *result)
         {
             if (solver->verbose)
             {
-                printf(" %4d | %14.6e | %12.4e |         -\n", i, w->obj,
-                       w->grad_norm);
+                printf(" %4d | %14.6e | %12.4e | %12.4e |         -\n", i, w->obj,
+                       w->grad_norm, w->newton_dec);
             }
             break;
         }
@@ -192,8 +192,8 @@ void Newton(NML_solver *solver, NML_result *result)
 
         if (solver->verbose)
         {
-            printf(" %4d | %14.6e | %12.4e | %9.4f\n", i, w->obj, w->grad_norm,
-                   w->step_size);
+            printf(" %4d | %14.6e | %12.4e | %12.4e | %9.4f\n", i, w->obj,
+                   w->grad_norm, w->newton_dec, w->step_size);
         }
 
         /* update iterate */

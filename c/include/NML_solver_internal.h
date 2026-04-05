@@ -16,18 +16,18 @@ typedef struct
 typedef struct
 {
     /* Iterate */
-    double *xy;           /* [x, y]^T, size 2n + 1 */
-    nml_complex *z;       /* auxiliary complex variable, size n + 1 */
+    double *xy;     /* [x, y]^T, size 2n + 1 */
+    nml_complex *z; /* auxiliary complex variable, size n + 1 */
 
     /* Gradient and Hessian */
-    nml_complex *grad_help; /* size N, used when computing gradient */
-    double *grad;           /* [grad_x, grad_y], size 2n + 1 */
-    nml_complex *F;         /* size N x N */
-    nml_complex *G;         /* size N x N */
-    nml_complex *hess_help; /* size N x N, used when computing Hessian */
-    double *hess_packed;    /* packed lower triangular Hessian */
+    nml_complex *grad_help;   /* size N, used when computing gradient */
+    double *grad;             /* [grad_x, grad_y], size 2n + 1 */
+    nml_complex *F;           /* size N x N */
+    nml_complex *G;           /* size N x N */
+    nml_complex *hess_help;   /* size N x N, used when computing Hessian */
+    double *hess_packed;      /* packed lower triangular Hessian */
     double *chol_hess_packed; /* packed Cholesky factor of Hessian */
-    double *hess_evals;     /* eigenvalues of Hessian, size 2n + 1 */
+    double *hess_evals;       /* eigenvalues of Hessian, size 2n + 1 */
 
     /* Toeplitz factorization */
     nml_complex *chol_toep;      /* packed Cholesky factor of T^{-1} */
@@ -55,6 +55,7 @@ typedef struct
     double obj;
     double new_obj;
     double grad_norm;
+    double newton_dec;
 } NML_workspace;
 
 struct NML_solver
