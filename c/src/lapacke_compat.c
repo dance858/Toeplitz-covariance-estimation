@@ -5,23 +5,32 @@
 #include "nml/platform/lapacke_compat.h"
 #include <stdlib.h>
 
+/* On Windows, OpenBLAS exports Fortran symbols without trailing underscore.
+   On Unix/macOS, the standard convention uses a trailing underscore. */
+#ifdef _WIN32
+#define LAPACK_GLOBAL(name) name
+#else
+#define LAPACK_GLOBAL(name) name##_
+#endif
+
 #ifdef __APPLE__
 #define ACCELERATE_NEW_LAPACK
 #include <Accelerate/Accelerate.h>
 typedef __LAPACK_int LAPACK_INT;
 typedef __LAPACK_double_complex LAPACK_ZTYPE;
 #else
-/* Declare Fortran LAPACK functions (provided by OpenBLAS or reference LAPACK) */
 typedef int LAPACK_INT;
 typedef double _Complex LAPACK_ZTYPE;
-extern void zpotrf_(char *uplo, LAPACK_INT *n, LAPACK_ZTYPE *a, LAPACK_INT *lda,
-                    LAPACK_INT *info);
-extern void dpptrf_(char *uplo, LAPACK_INT *n, double *ap, LAPACK_INT *info);
-extern void dspevx_(char *jobz, char *range, char *uplo, LAPACK_INT *n, double *ap,
-                    double *vl, double *vu, LAPACK_INT *il, LAPACK_INT *iu,
-                    double *abstol, LAPACK_INT *m, double *w, double *z,
-                    LAPACK_INT *ldz, double *work, LAPACK_INT *iwork,
-                    LAPACK_INT *ifail, LAPACK_INT *info);
+extern void LAPACK_GLOBAL(zpotrf)(char *uplo, LAPACK_INT *n, LAPACK_ZTYPE *a,
+                                  LAPACK_INT *lda, LAPACK_INT *info);
+extern void LAPACK_GLOBAL(dpptrf)(char *uplo, LAPACK_INT *n, double *ap,
+                                  LAPACK_INT *info);
+extern void LAPACK_GLOBAL(dspevx)(char *jobz, char *range, char *uplo, LAPACK_INT *n,
+                                  double *ap, double *vl, double *vu, LAPACK_INT *il,
+                                  LAPACK_INT *iu, double *abstol, LAPACK_INT *m,
+                                  double *w, double *z, LAPACK_INT *ldz,
+                                  double *work, LAPACK_INT *iwork, LAPACK_INT *ifail,
+                                  LAPACK_INT *info);
 #endif
 
 lapack_int LAPACKE_zpotrf(int matrix_layout, char uplo, lapack_int n,
@@ -31,7 +40,7 @@ lapack_int LAPACKE_zpotrf(int matrix_layout, char uplo, lapack_int n,
     LAPACK_INT info = 0;
     LAPACK_INT n_ = n;
     LAPACK_INT lda_ = lda;
-    zpotrf_(&uplo, &n_, (LAPACK_ZTYPE *) a, &lda_, &info);
+    LAPACK_GLOBAL(zpotrf)(&uplo, &n_, (LAPACK_ZTYPE *) a, &lda_, &info);
     return (lapack_int) info;
 }
 
@@ -40,7 +49,7 @@ lapack_int LAPACKE_dpptrf(int matrix_layout, char uplo, lapack_int n, double *ap
     (void) matrix_layout;
     LAPACK_INT info = 0;
     LAPACK_INT n_ = n;
-    dpptrf_(&uplo, &n_, ap, &info);
+    LAPACK_GLOBAL(dpptrf)(&uplo, &n_, ap, &info);
     return (lapack_int) info;
 }
 
@@ -61,8 +70,9 @@ lapack_int LAPACKE_dspevx(int matrix_layout, char jobz, char range, char uplo,
     LAPACK_INT *iwork = malloc(sizeof(LAPACK_INT) * 5 * n);
     LAPACK_INT *ifail_ = malloc(sizeof(LAPACK_INT) * n);
 
-    dspevx_(&jobz, &range, &uplo, &n_, ap, &vl, &vu, &il_, &iu_, &abstol, &m_, w, z,
-            &ldz_, work, iwork, ifail_, &info);
+    LAPACK_GLOBAL(dspevx)
+    (&jobz, &range, &uplo, &n_, ap, &vl, &vu, &il_, &iu_, &abstol, &m_, w, z, &ldz_,
+     work, iwork, ifail_, &info);
 
     *m = (lapack_int) m_;
     if (ifail != NULL)
