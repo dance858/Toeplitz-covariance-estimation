@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
+#include "Timer.h"
 
 static NML_work *new_work(int n, int K, double tol, double beta, double alpha,
                           int verbose, int max_iter)
@@ -223,8 +223,8 @@ void NML_free_output(NML_out *output)
 int NML(double complex *Z_data, int n, int K, NML_out *output, double tol,
         double beta, double alpha, int verbose, int max_iter)
 {
-    struct timeval stop_total_time, start_total_time;
-    gettimeofday(&start_total_time, NULL);
+    Timer timer;
+    clock_gettime(CLOCK_MONOTONIC, &timer.start);
 
     NML_work *w = new_work(n, K, tol, beta, alpha, verbose, max_iter);
     new_output(output, n);
@@ -232,10 +232,8 @@ int NML(double complex *Z_data, int n, int K, NML_out *output, double tol,
     Newton(w, output);
     free_work(w);
 
-    gettimeofday(&stop_total_time, NULL);
-    output->total_time =
-        (stop_total_time.tv_sec - start_total_time.tv_sec) +
-        (stop_total_time.tv_usec - start_total_time.tv_usec) / 1000000.0;
+    clock_gettime(CLOCK_MONOTONIC, &timer.end);
+    output->total_time = GET_ELAPSED_SECONDS(timer);
 
     return 0;
 }
