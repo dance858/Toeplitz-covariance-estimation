@@ -93,7 +93,19 @@ if(FFTW3_LIBRARY_DIRS)
 endif()
 target_link_libraries(nml PUBLIC ${BLAS_LAPACK_LIBS} ${FFTW3_LIBRARIES})
 
-if(NOT MSVC)
+if(MSVC)
+    if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        # clang-cl needs the Clang runtime for complex arithmetic (__divdc3, __muldc3)
+        execute_process(
+            COMMAND ${CMAKE_C_COMPILER} --print-libgcc-file-name --target=x86_64-pc-windows-msvc
+            OUTPUT_VARIABLE CLANG_RT_BUILTINS
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        if(CLANG_RT_BUILTINS)
+            target_link_libraries(nml PUBLIC ${CLANG_RT_BUILTINS})
+        endif()
+    endif()
+else()
     target_link_libraries(nml PUBLIC m)
     target_compile_options(nml PRIVATE -Wall -O3)
 endif()

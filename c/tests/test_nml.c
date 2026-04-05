@@ -125,7 +125,7 @@ static int test_levinson_durbin_non_pd(void)
 /* --------------------------------------------------------------------------
    Simple LCG random number generator (deterministic, no srand dependency)
    -------------------------------------------------------------------------- */
-static unsigned long rng_state = 12345;
+static unsigned long long rng_state = 12345;
 
 static double rand_normal(void)
 {
