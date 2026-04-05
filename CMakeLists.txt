@@ -69,6 +69,7 @@ target_include_directories(nml
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/c/include>
         $<INSTALL_INTERFACE:include>
     PRIVATE
+        ${CMAKE_SOURCE_DIR}/c/src
         ${FFTW3_INCLUDE_DIRS}
 )
 

@@ -3,9 +3,8 @@
 #include "nml/NML_work.h"
 #include <complex.h>
 
-int NML(double complex *Z_data, const int n, const int K, NML_out *output,
-        double tol, double beta, double alpha, int verbose, int max_iter);
+int NML(double complex *Z_data, int n, int K, NML_out *output, double tol,
+        double beta, double alpha, int verbose, int max_iter);
 void NML_free_output(NML_out *output);
-void init_guess(double complex *Z_data, NML_work *w, NML_out *output);
 
 #endif

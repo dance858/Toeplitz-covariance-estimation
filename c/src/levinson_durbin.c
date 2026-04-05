@@ -1,11 +1,11 @@
 #include "nml/levinson_durbin.h"
-#include "nml/linalg.h"
+#include "linalg.h"
 #include "nml/platform/blas_lapack.h"
-#include "nml/utils.h"
+#include "utils.h"
 #include <math.h>
 #include <stdlib.h>
 
-int lev_dur_real(double *y, double *L, double *sigma2, const int p)
+int lev_dur_real(const double *y, double *L, double *sigma2, int p)
 {
     /* initialization */
     double kappa = -y[1] / y[0]; /* reflection coefficient */
@@ -45,8 +45,8 @@ int lev_dur_real(double *y, double *L, double *sigma2, const int p)
     }
 }
 
-int lev_dur_complex(double complex *y, double complex *L, double *sigma2,
-                    const int p)
+int lev_dur_complex(const double complex *y, double complex *L, double *sigma2,
+                    int p)
 {
     /* initialization */
     double complex kappa = -y[1] / y[0]; /* reflection coefficient */

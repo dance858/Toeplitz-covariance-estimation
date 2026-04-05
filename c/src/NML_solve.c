@@ -1,17 +1,16 @@
 #include "nml/NML_solve.h"
-#include "nml/Newton.h"
+#include "Newton.h"
+#include "linalg.h"
 #include "nml/levinson_durbin.h"
-#include "nml/linalg.h"
 #include "nml/platform/blas_lapack.h"
-#include "nml/utils.h"
+#include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
 
-/* allocates workspace for NML */
-NML_work *init_work(const int n, const int K, double tol, double beta, double alpha,
-                    int verbose, int max_iter)
+static NML_work *new_work(int n, int K, double tol, double beta, double alpha,
+                          int verbose, int max_iter)
 {
     NML_work *w = malloc(sizeof(*w));
     w->n = n;
@@ -38,7 +37,6 @@ NML_work *init_work(const int n, const int K, double tol, double beta, double al
     w->grad = malloc(sizeof(*w->grad) * (2 * n + 1));
     w->F = malloc(sizeof(*w->F) * w->N * w->N);
     w->G = malloc(sizeof(*w->G) * w->N * w->N);
-    // w->hess = malloc(sizeof(*w->hess) * (2* n + 1) * (2 * n + 1));
     w->hess_packed = malloc(sizeof(*w->hess_packed) * (n + 1) * (2 * n + 1));
     w->chol_hess_packed =
         malloc(sizeof(*w->chol_hess_packed) * (n + 1) * (2 * n + 1));
@@ -77,10 +75,10 @@ NML_work *init_work(const int n, const int K, double tol, double beta, double al
     return w;
 }
 
-void finish_work(NML_work *w)
+static void free_work(NML_work *w)
 {
+    if (!w) return;
 
-    /* deallocate iterates */
     free(w->xy);
     free(w->z);
 
@@ -93,7 +91,6 @@ void finish_work(NML_work *w)
     free(w->chol_hess_packed);
     free(w->hess_evals);
 
-    /* deallocate memory for Cholesky factors */
     free(w->full_chol_toep);
     free(w->chol_toep);
     free(w->sigma2);
@@ -101,24 +98,20 @@ void finish_work(NML_work *w)
     free(w->L_full);
     free(w->sample_cov);
 
-    /* deallocate memory for search direction */
     free(w->neg_dir);
 
-    /* destroy FFT plans */
     fftw_destroy_plan(w->plan_R_DFT);
     fftw_destroy_plan(w->plan_A_DFT);
     fftw_destroy_plan(w->plan_grad_help);
     fftw_destroy_plan(w->plan_hess_help);
 
-    /* deallocate memory for DFTs */
     fftw_free(w->R_DFT);
     fftw_free(w->A_DFT);
 
-    /* deallocate workspace */
     free(w);
 }
-/* Assume that output = malloc(sizeof(*output)) has been executed */
-void init_output(NML_out *output, int n)
+
+static void new_output(NML_out *output, int n)
 {
     output->x_sol = malloc(sizeof(double) * (n + 1));
     output->y_sol = malloc(sizeof(double) * n);
@@ -132,10 +125,10 @@ void init_output(NML_out *output, int n)
     NOTE: After exit, w->chol_toep has been modified so
           T(x, y)^{-1} = w->chol_toep * w->chol_toep^H.
 */
-void init_guess(double complex *Z_data, NML_work *w, NML_out *output)
+static void init_guess(double complex *Z_data, NML_work *w, NML_out *output)
 {
     int i, status;
-    ;
+
     /* Compute sample covariance. The lower triangular part is stored in a
        full matrix of size (n+1) x (n+1) */
     memset(w->sample_cov, 0, sizeof(double complex) * w->n_plus_one * w->n_plus_one);
@@ -152,10 +145,6 @@ void init_guess(double complex *Z_data, NML_work *w, NML_out *output)
                sizeof(double complex) * w->n_plus_one * w->n_plus_one);
         status = LAPACKE_zpotrf(LAPACK_COL_MAJOR, 'L', w->n_plus_one, w->L_full,
                                 w->n_plus_one);
-
-        /* if (status != 0){
-            printf("Adding small regularization to sample covariance. ");
-        } */
 
         /* add small regularization to diagonal elements of sample cov */
         for (i = 0; i < w->n_plus_one; i++)
@@ -185,8 +174,7 @@ void init_guess(double complex *Z_data, NML_work *w, NML_out *output)
                                w->n_plus_one, FFTW_BACKWARD, FFTW_ESTIMATE);
         fftw_execute_dft(plan_Z_data, Z_data, Z_data);
 
-        /* compute q of size (n+1) x 1. It is stored in z. We omit multiplicative
-         * factors.  */
+        /* compute q of size (n+1) x 1, stored in z */
         memset(w->z, 0, sizeof(double complex) * (w->n_plus_one));
         for (int k = 0; k < w->K; k++)
         {
@@ -199,15 +187,15 @@ void init_guess(double complex *Z_data, NML_work *w, NML_out *output)
             }
         }
 
-        /*  compute FFT of q */
+        /* compute FFT of q */
         fftw_plan plan_q =
             fftw_plan_dft_1d(w->n_plus_one, w->z, w->z, FFTW_FORWARD, FFTW_ESTIMATE);
         fftw_execute(plan_q);
 
-        /*  scale with 1/(K*(n+1)^2). After this operation, w->z stores the first
-            column of the circulant ML estimate. */
-        complex double my_alpha = 1.0 / (w->K * w->n_plus_one * w->n_plus_one);
-        cblas_zscal(w->n_plus_one, &my_alpha, w->z, 1);
+        /* scale with 1/(K*(n+1)^2). After this operation, w->z stores the first
+           column of the circulant ML estimate. */
+        complex double scale = 1.0 / (w->K * w->n_plus_one * w->n_plus_one);
+        cblas_zscal(w->n_plus_one, &scale, w->z, 1);
 
         status = lev_dur_complex(w->z, w->chol_toep, w->sigma2, w->n);
         fftw_destroy_plan(plan_q);
@@ -227,35 +215,22 @@ void init_guess(double complex *Z_data, NML_work *w, NML_out *output)
 
 void NML_free_output(NML_out *output)
 {
-    if (output)
-    {
-        free(output->x_sol);
-        free(output->y_sol);
-    }
+    if (!output) return;
+    free(output->x_sol);
+    free(output->y_sol);
 }
 
-/* Where should output be deallocated? */
-int NML(double complex *Z_data, const int n, const int K, NML_out *output,
-        double tol, double beta, double alpha, int verbose, int max_iter)
+int NML(double complex *Z_data, int n, int K, NML_out *output, double tol,
+        double beta, double alpha, int verbose, int max_iter)
 {
-
     struct timeval stop_total_time, start_total_time;
     gettimeofday(&start_total_time, NULL);
 
-    /* set up workspace */
-    NML_work *w = init_work(n, K, tol, beta, alpha, verbose, max_iter);
-    init_output(output, n);
-
-    /* compute initial point */
+    NML_work *w = new_work(n, K, tol, beta, alpha, verbose, max_iter);
+    new_output(output, n);
     init_guess(Z_data, w, output);
-
-    /* Newton's method */
-    // printf("Starting Newton's method");
     Newton(w, output);
-    // printf("Finished Newton's method");
-
-    /* deallocate workspace */
-    finish_work(w);
+    free_work(w);
 
     gettimeofday(&stop_total_time, NULL);
     output->total_time =
