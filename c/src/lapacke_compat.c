@@ -5,13 +5,8 @@
 #include "nml/platform/lapacke_compat.h"
 #include <stdlib.h>
 
-/* Fortran name mangling: trailing underscore on Unix (gfortran/Accelerate),
-   but no underscore on Windows (vcpkg OpenBLAS). */
-#ifdef _WIN32
-#define LAPACK_GLOBAL(name) name
-#else
+/* Fortran name mangling: trailing underscore (gfortran/Accelerate convention) */
 #define LAPACK_GLOBAL(name) name##_
-#endif
 
 #ifdef __APPLE__
 #define ACCELERATE_NEW_LAPACK
