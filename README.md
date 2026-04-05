@@ -68,15 +68,20 @@ nml_free_solver(solver);
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
 ```python
 import numpy as np
-from nml import solve
+from nml import NMLSolver
+
+# Create solver for dimension n+1
+solver = NMLSolver(n)
 
 # Z is a (n+1, K) complex data matrix
-result = solve(Z)
+result = solver.solve(Z)
 x, y = result["x"], result["y"]
 
 # Reconstruct the Toeplitz covariance matrix
 from scipy.linalg import toeplitz
 R_hat = toeplitz(np.concatenate([[2*x[0]], x[1:] - 1j*y]))
+
+solver.free()
 ```
 
 See `python/examples/demo.py` for a full example.

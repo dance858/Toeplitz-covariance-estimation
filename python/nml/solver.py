@@ -67,84 +67,109 @@ class _NML_result(ctypes.Structure):
     ]
 
 
-def solve(Z, tol=1e-8, beta=0.8, alpha=0.05, verbose=False, max_iter=200):
-    """Solve the ML Toeplitz covariance estimation problem.
+class NMLSolver:
+    """Solver for ML Toeplitz covariance estimation.
 
     Minimizes  log det R + Tr(R^{-1} S)  subject to R being Toeplitz,
     where S is the sample covariance of the columns of Z.
 
     Parameters
     ----------
-    Z : np.ndarray, complex128, shape (n+1, K)
-        Data matrix with K measurement vectors of dimension n+1.
+    n : int
+        The covariance matrix has dimension n+1.
     tol : float
         Convergence tolerance on Newton decrement.
     beta : float
         Backtracking line search shrinkage factor.
     alpha : float
         Backtracking line search sufficient decrease parameter.
-    verbose : bool
-        Print iteration progress.
     max_iter : int
         Maximum Newton iterations.
-
-    Returns
-    -------
-    dict with keys:
-        'x' : np.ndarray, shape (n+1,) — real part of first column of R
-        'y' : np.ndarray, shape (n,)   — imaginary part of first column of R
-        'obj' : float                  — final objective value
-        'grad_norm' : float            — gradient norm at solution
-        'time' : float                 — solve time in seconds
-        'iter' : int                   — number of Newton iterations
-        'diag_init_succeeded' : bool
-        'num_hess_chol_fails' : int
     """
-    lib = _load_lib()
 
-    Z = np.asarray(Z, dtype=np.complex128, order="F")
-    if Z.ndim != 2:
-        raise ValueError("Z must be a 2D array of shape (n+1, K)")
+    def __init__(self, n, tol=1e-8, beta=0.8, alpha=0.05, max_iter=200):
+        self._lib = _load_lib()
+        self._n = n
+        self._ptr = self._lib.nml_new_solver(n, tol, beta, alpha, max_iter)
 
-    n_plus_one, K = Z.shape
-    n = n_plus_one - 1
+    def solve(self, Z, verbose=False):
+        """Solve given a data matrix Z.
 
-    # Make a contiguous copy (column-major) since C may modify it
-    Z_data = np.asfortranarray(Z).copy()
+        Parameters
+        ----------
+        Z : np.ndarray, complex128, shape (n+1, K)
+            Data matrix with K measurement vectors of dimension n+1.
+        verbose : bool
+            Print iteration progress.
 
-    solver_ptr = lib.nml_new_solver(n, tol, beta, alpha, max_iter)
-    result = _NML_result()
+        Returns
+        -------
+        dict with keys:
+            'x' : np.ndarray, shape (n+1,) — real part of first column of R
+            'y' : np.ndarray, shape (n,)   — imaginary part of first column of R
+            'obj' : float                  — final objective value
+            'grad_norm' : float            — gradient norm at solution
+            'time' : float                 — solve time in seconds
+            'iter' : int                   — number of Newton iterations
+            'diag_init_succeeded' : bool
+            'num_hess_chol_fails' : int
+        """
+        if self._ptr is None:
+            raise RuntimeError("Solver has been freed")
 
-    # Allocate x and y arrays for the result
-    x_buf = (ctypes.c_double * (n + 1))()
-    y_buf = (ctypes.c_double * n)()
-    result.x = ctypes.cast(x_buf, ctypes.POINTER(ctypes.c_double))
-    result.y = ctypes.cast(y_buf, ctypes.POINTER(ctypes.c_double))
+        Z = np.asarray(Z, dtype=np.complex128, order="F")
+        if Z.ndim != 2:
+            raise ValueError("Z must be a 2D array of shape (n+1, K)")
 
-    ret = lib.nml_solve(
-        solver_ptr,
-        Z_data.ctypes.data_as(ctypes.c_void_p),
-        K, ctypes.byref(result), int(verbose),
-    )
+        n = self._n
+        n_plus_one, K = Z.shape
+        if n_plus_one != n + 1:
+            raise ValueError(
+                f"Z has {n_plus_one} rows but solver expects {n + 1}"
+            )
 
-    if ret != 0:
-        lib.nml_free_solver(solver_ptr)
-        raise RuntimeError(f"NML solver returned error code {ret}")
+        Z_data = np.asfortranarray(Z).copy()
 
-    x = np.ctypeslib.as_array(result.x, shape=(n + 1,)).copy()
-    y = np.ctypeslib.as_array(result.y, shape=(n,)).copy()
+        result = _NML_result()
+        x_buf = (ctypes.c_double * (n + 1))()
+        y_buf = (ctypes.c_double * n)()
+        result.x = ctypes.cast(x_buf, ctypes.POINTER(ctypes.c_double))
+        result.y = ctypes.cast(y_buf, ctypes.POINTER(ctypes.c_double))
 
-    out = {
-        "x": x,
-        "y": y,
-        "obj": result.obj,
-        "grad_norm": result.grad_norm,
-        "time": result.solve_time,
-        "iter": result.iter,
-        "diag_init_succeeded": bool(result.diag_init_succeeded),
-        "num_hess_chol_fails": result.num_of_hess_chol_fails,
-    }
+        ret = self._lib.nml_solve(
+            self._ptr,
+            Z_data.ctypes.data_as(ctypes.c_void_p),
+            K, ctypes.byref(result), int(verbose),
+        )
 
-    lib.nml_free_solver(solver_ptr)
+        if ret != 0:
+            raise RuntimeError(f"NML solver returned error code {ret}")
 
-    return out
+        x = np.ctypeslib.as_array(result.x, shape=(n + 1,)).copy()
+        y = np.ctypeslib.as_array(result.y, shape=(n,)).copy()
+
+        return {
+            "x": x,
+            "y": y,
+            "obj": result.obj,
+            "grad_norm": result.grad_norm,
+            "time": result.solve_time,
+            "iter": result.iter,
+            "diag_init_succeeded": bool(result.diag_init_succeeded),
+            "num_hess_chol_fails": result.num_of_hess_chol_fails,
+        }
+
+    def free(self):
+        """Free the underlying C solver."""
+        if self._ptr is not None:
+            self._lib.nml_free_solver(self._ptr)
+            self._ptr = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.free()
+
+    def __del__(self):
+        self.free()
