@@ -17,7 +17,7 @@ void compute_derivatives_packed(NML_solver *solver)
 
     /* DFT of chol_toep. */
     pad_with_zeros(w->full_chol_toep, w->R_DFT, n_plus_one, n_plus_one, N);
-    fftw_execute_dft(w->plan_R_DFT, w->R_DFT, w->R_DFT);
+    fftw_execute_dft(w->plan_R_DFT, NML_FFTW(w->R_DFT), NML_FFTW(w->R_DFT));
     nml_complex one = 1;
 
     /* compute A = R*(R'*L), where R is lower triangular. Store it in w->RHL. */
@@ -27,7 +27,7 @@ void compute_derivatives_packed(NML_solver *solver)
 
     /* compute DFT of A */
     pad_with_zeros(w->RHL, w->A_DFT, n_plus_one, n_plus_one, N);
-    fftw_execute_dft(w->plan_A_DFT, w->A_DFT, w->A_DFT);
+    fftw_execute_dft(w->plan_A_DFT, NML_FFTW(w->A_DFT), NML_FFTW(w->A_DFT));
 
     /* compute quantity that should be IFFT:ed to obtain the gradient */
     nml_complex Rik, Aik;
@@ -81,11 +81,11 @@ void compute_derivatives_packed(NML_solver *solver)
     }
 
     /* hess_help = (F .* G^T + F^T .* G - F .* F^T) * W */
-    fftw_execute_dft(w->plan_hess_help, w->hess_help, w->hess_help);
+    fftw_execute_dft(w->plan_hess_help, NML_FFTW(w->hess_help), NML_FFTW(w->hess_help));
     hermitian_conj(w->hess_help, N);
 
     /* hess_help = W^H*(F.*G^T + F^T.*G - F.*F^T)*W */
-    fftw_execute_dft(w->plan_hess_help, w->hess_help, w->hess_help);
+    fftw_execute_dft(w->plan_hess_help, NML_FFTW(w->hess_help), NML_FFTW(w->hess_help));
 
     /* correct scaling: 4/N^2 */
     alpha = 4.0 / (N * N);
