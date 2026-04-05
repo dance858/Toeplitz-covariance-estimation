@@ -1,16 +1,14 @@
 /* LAPACKE shim: provides the 3 LAPACKE functions used by NML by calling
-   the Fortran-style LAPACK routines available in Accelerate (macOS) or
-   OpenBLAS (Windows/other). Only compiled when system LAPACKE is not found. */
+   the Fortran-style LAPACK routines available in Accelerate (macOS),
+   clapack (Windows), or system LAPACK (Linux). */
 
-#include "nml/platform/lapacke_compat.h"
+#include "nml/platform/blas_lapack.h"
 #include <stdlib.h>
 
 /* Fortran name mangling: trailing underscore (gfortran/Accelerate convention) */
 #define LAPACK_GLOBAL(name) name##_
 
 #ifdef __APPLE__
-#define ACCELERATE_NEW_LAPACK
-#include <Accelerate/Accelerate.h>
 typedef __LAPACK_int LAPACK_INT;
 typedef __LAPACK_double_complex LAPACK_ZTYPE;
 #else
