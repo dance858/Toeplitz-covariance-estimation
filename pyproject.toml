@@ -1,0 +1,19 @@
+[build-system]
+requires = ["scikit-build-core>=0.5"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "nml-toeplitz"
+version = "0.1.0"
+description = "Newton Maximum Likelihood estimation of Toeplitz covariance matrices"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+dependencies = ["numpy"]
+
+[project.urls]
+Homepage = "https://github.com/dance858/Toeplitz-covariance-estimation"
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+wheel.packages = ["python/nml"]
