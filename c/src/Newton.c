@@ -50,9 +50,9 @@ static int has_converged(NML_work *w)
 {
     double newton_dec =
         cblas_ddot(w->two_n_plus_one, w->grad, 1, w->neg_dir, 1);
+    w->grad_norm = cblas_dnrm2(w->two_n_plus_one, w->grad, 1);
     if (w->verbose)
     {
-        w->grad_norm = cblas_dnrm2(w->two_n_plus_one, w->grad, 1);
         printf("grad_norm/obj: %.6e \t %.6f \n", w->grad_norm, w->obj);
     }
 
