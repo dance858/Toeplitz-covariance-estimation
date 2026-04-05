@@ -1,8 +1,6 @@
 #ifndef NML_LAPACKE_COMPAT_H
 #define NML_LAPACKE_COMPAT_H
 
-#ifdef __APPLE__
-
 #include <complex.h>
 
 #ifndef LAPACK_COL_MAJOR
@@ -22,5 +20,4 @@ lapack_int LAPACKE_dspevx(int matrix_layout, char jobz, char range, char uplo,
                           lapack_int il, lapack_int iu, double abstol, lapack_int *m,
                           double *w, double *z, lapack_int ldz, lapack_int *ifail);
 
-#endif /* __APPLE__ */
 #endif

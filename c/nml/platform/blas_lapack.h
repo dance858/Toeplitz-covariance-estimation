@@ -3,11 +3,15 @@
 
 #ifdef __APPLE__
 #define ACCELERATE_NEW_LAPACK
-#include "lapacke_compat.h"
 #include <Accelerate/Accelerate.h>
 #else
 #include <cblas.h>
+#endif
+
+#ifdef NML_HAS_LAPACKE
 #include <lapacke.h>
+#else
+#include "lapacke_compat.h"
 #endif
 
 #endif
