@@ -27,7 +27,7 @@ jobs:
 
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
-      run: vcpkg install openblas:x64-windows fftw3:x64-windows
+      run: vcpkg install openblas:x64-windows clapack:x64-windows fftw3:x64-windows
 
     - name: Configure CMake
       run: >
