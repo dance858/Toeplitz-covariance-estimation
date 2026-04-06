@@ -114,8 +114,6 @@ void Newton(NML_solver *solver, NML_result *result)
 
     int i, k, info;
     int num_evals_found;
-    int unused_ifail;
-    double unused_eigvec;
 
     /* Compute objective value */
     w->obj = compute_obj(w, n_plus_one);
@@ -150,8 +148,8 @@ void Newton(NML_solver *solver, NML_result *result)
                    sizeof(double) * n_plus_one * two_n_plus_one);
             info = LAPACKE_dspevx(LAPACK_COL_MAJOR, 'N', 'A', 'L', two_n_plus_one,
                                   w->chol_hess_packed, 0.0, 0.0, 0.0, 0.0, -1.0,
-                                  &num_evals_found, w->hess_evals, &unused_eigvec,
-                                  1.0, &unused_ifail);
+                                  &num_evals_found, w->hess_evals, NULL,
+                                  1, NULL);
 
             w->hess_evals[0] = MIN(-0.1, w->hess_evals[0]) * 1.05;
             /* add multiple of the identity to Hessian */
