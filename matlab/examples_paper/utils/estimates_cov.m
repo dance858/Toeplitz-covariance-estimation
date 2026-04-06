@@ -18,7 +18,7 @@ if iter >= 100
     fprintf("Number of Newton iterations: %i \n", iter)
     fprintf("Number of Newton iterations: %i \n", grad_norm)
 end
-NML_out.estimate = toeplitz([2*x(1); x(2:end) + 1i*y]);
+NML_out.estimate = toeplitz([2*x(1); x(2:end) - 1i*y]);
 NML_out.solve_time = NML_time;
 NML_out.iter = iter;
 

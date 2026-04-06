@@ -34,8 +34,7 @@ def main():
     max_iter = 100
 
     # Create solver
-    n = m - 1
-    solver = NMLSolver(n, tol=tol, beta=beta, alpha=alpha, max_iter=max_iter)
+    solver = NMLSolver(m, tol=tol, beta=beta, alpha=alpha, max_iter=max_iter)
 
     # Containers
     MSE_SC = np.zeros(len(samples))
@@ -58,7 +57,7 @@ def main():
             # NML estimate
             result = solver.solve(Y, verbose=False)
             x, y = result["x"], result["y"]
-            first_col = np.concatenate([[2 * x[0]], x[1:] + 1j * y])
+            first_col = np.concatenate([[2 * x[0]], x[1:] - 1j * y])
             nml_cov = toeplitz(first_col)
 
             total_solve_time += result["time"]

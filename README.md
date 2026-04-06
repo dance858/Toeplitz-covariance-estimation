@@ -19,11 +19,12 @@ applications can be found in our [paper](https://www.sciencedirect.com/science/a
 ## Installation
 
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
-**Prerequisites:** [FFTW3](https://www.fftw.org/) must be installed on your system.
-- macOS: `brew install fftw`
-- Linux: `sudo apt install libfftw3-dev`
+Install from PyPI:
+```
+pip install nml-toeplitz
+```
 
-Then install with pip:
+Alternatively, to install from source, [FFTW3](https://www.fftw.org/) must be installed on your system (`brew install fftw` on macOS, `sudo apt install libfftw3-dev` on Linux):
 ```
 pip install .
 ```
@@ -45,17 +46,17 @@ cmake --build build
 
 ## Usage
 
-The solver follows a create-solve-free pattern. First create a solver for a given problem size and algorithmic parameters, then call solve (potentially multiple times with different data), and finally free the solver.
+The solver follows a create-solve-free pattern. First create a solver for a given problem size and algorithmic parameters, then call solve (potentially multiple times with different data), and finally free the solver. The solver returns vectors `x` (length n) and `y` (length n-1). The first column of the estimated Toeplitz covariance matrix is `[2*x[0], x[1] - 1j*y[0], x[2] - 1j*y[1], ...]`.
 
 ### Python <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="20" />
 ```python
 import numpy as np
 from nml import NMLSolver
 
-# Create solver for dimension n+1
+# Create solver for dimension n
 solver = NMLSolver(n)
 
-# Z is a (n+1, K) complex data matrix
+# Z is a (n, K) complex data matrix
 result = solver.solve(Z)
 x, y = result["x"], result["y"]
 
@@ -68,12 +69,12 @@ solver.free()
 
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/>
 ```matlab
-% Create solver for dimension n+1
+% Create solver for dimension n
 solver = nml_new_solver(n, tol, beta, alpha, max_iter);
 
-% Solve: Z is a (n+1) x K complex data matrix
+% Solve: Z is a n x K complex data matrix
 [x, y, grad_norm, obj, solve_time, iter] = nml_solve(solver, Z, verbose);
-R_hat = toeplitz([2*x(1); x(2:end) + 1i*y]);
+R_hat = toeplitz([2*x(1); x(2:end) - 1i*y]);
 
 % Free solver
 nml_free_solver(solver);

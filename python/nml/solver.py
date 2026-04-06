@@ -11,7 +11,7 @@ class NMLSolver:
     Parameters
     ----------
     n : int
-        The covariance matrix has dimension n+1.
+        Dimension of the covariance matrix.
     tol : float
         Convergence tolerance on Newton decrement.
     beta : float
@@ -24,23 +24,23 @@ class NMLSolver:
 
     def __init__(self, n, tol=1e-8, beta=0.8, alpha=0.05, max_iter=200):
         self._n = n
-        self._solver = _nml.new_solver(n, tol, beta, alpha, max_iter)
+        self._solver = _nml.new_solver(n - 1, tol, beta, alpha, max_iter)
 
     def solve(self, Z, verbose=False):
         """Solve given a data matrix Z.
 
         Parameters
         ----------
-        Z : np.ndarray, complex128, shape (n+1, K)
-            Data matrix with K measurement vectors of dimension n+1.
+        Z : np.ndarray, complex128, shape (n, K)
+            Data matrix with K measurement vectors of dimension n.
         verbose : bool
             Print iteration progress.
 
         Returns
         -------
         dict with keys:
-            'x' : np.ndarray, shape (n+1,) — real part of first column of R
-            'y' : np.ndarray, shape (n,)   — imaginary part of first column of R
+            'x' : np.ndarray, shape (n,)   — real part of first column of R
+            'y' : np.ndarray, shape (n-1,) — imaginary part of first column of R
             'obj' : float                  — final objective value
             'grad_norm' : float            — gradient norm at solution
             'time' : float                 — solve time in seconds
@@ -53,10 +53,10 @@ class NMLSolver:
 
         Z = np.asarray(Z, dtype=np.complex128, order="F")
         if Z.ndim != 2:
-            raise ValueError("Z must be a 2D array of shape (n+1, K)")
-        if Z.shape[0] != self._n + 1:
+            raise ValueError("Z must be a 2D array of shape (n, K)")
+        if Z.shape[0] != self._n:
             raise ValueError(
-                f"Z has {Z.shape[0]} rows but solver expects {self._n + 1}"
+                f"Z has {Z.shape[0]} rows but solver expects {self._n}"
             )
 
         return _nml.solve(self._solver, Z, int(verbose))

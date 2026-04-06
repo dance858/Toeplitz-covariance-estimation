@@ -3,7 +3,8 @@
 #include "nml/NML_solver.h"
 #include <stdint.h>
 
-/* nml_new_solver(n, tol, beta, alpha, max_iter) -> solver_ptr (uint64) */
+/* nml_new_solver(n, tol, beta, alpha, max_iter) -> solver_ptr (uint64)
+   n is the dimension of the covariance matrix. */
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     if (nrhs != 5)
@@ -18,7 +19,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     double alpha = mxGetScalar(prhs[3]);
     int max_iter = (int) mxGetScalar(prhs[4]);
 
-    NML_solver *solver = nml_new_solver(n, tol, beta, alpha, max_iter);
+    NML_solver *solver = nml_new_solver(n - 1, tol, beta, alpha, max_iter);
     if (!solver)
     {
         mexErrMsgTxt("Failed to create solver");

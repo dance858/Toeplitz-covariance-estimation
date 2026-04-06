@@ -32,8 +32,7 @@ average_solve_time = 0;
 average_iter = 0;
 
 % Create solver
-n = m - 1;
-solver = nml_new_solver(n, tol, beta, alpha, max_iter);
+solver = nml_new_solver(m, tol, beta, alpha, max_iter);
 
 for ii = 1:length(samples)
     K = samples(ii);
@@ -43,13 +42,12 @@ for ii = 1:length(samples)
         [Y, true_cov] = generate_ula_data(power_source, sig2, d, m, M, K, ...
               wavelength, theta_rad);
         [dim, K] = size(Y);
-        n = dim - 1;
 
         % Estimate covariance matrix.
         sample_cov = 1/K*(Y*Y');
         [x, y, grad_norm, obj, solve_time, iter] = ...
             nml_solve(solver, Y, verbose);
-        NML_cov = toeplitz([2*x(1); x(2:end) + 1i*y]);
+        NML_cov = toeplitz([2*x(1); x(2:end) - 1i*y]);
 
         average_solve_time = average_solve_time + solve_time;
         average_iter = average_iter + iter;
