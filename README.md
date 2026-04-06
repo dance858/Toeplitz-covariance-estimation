@@ -9,12 +9,12 @@ $$
 $$
 
 with decision variable
-$R \in \mathbf{H}^{n+1}$
+$R \in \mathbf{H}^{n}$
 and problem data
-$S \in \mathbf{H}^{n+1}$ representing the sample covariance matrix. Here
-$\mathbf{H}^{n+1}$ is the space of Hermitian matrices of dimension $n + 1$. A
-description of the method, which we refer to as `NML`,  along with possible
-applications can be found in our [paper](https://www.sciencedirect.com/science/article/pii/S0165168424001257).
+$S \in \mathbf{H}^{n}$ representing the sample covariance matrix. Here
+$\mathbf{H}^{n}$ is the space of Hermitian matrices of dimension $n$. A
+description of the method, which we refer to as `NML`, along with possible
+applications can be found in our [paper](https://www.sciencedirect.com/science/article/pii/S0165168424001257). Note that the paper uses dimension $n + 1$; this repository uses $n$ instead.
 
 ## Installation
 
@@ -22,11 +22,6 @@ applications can be found in our [paper](https://www.sciencedirect.com/science/a
 Install from PyPI:
 ```
 pip install nml-toeplitz
-```
-
-Alternatively, to install from source, [FFTW3](https://www.fftw.org/) must be installed on your system (`brew install fftw` on macOS, `sudo apt install libfftw3-dev` on Linux):
-```
-pip install .
 ```
 
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/>
@@ -66,6 +61,7 @@ R_hat = toeplitz(np.concatenate([[2*x[0]], x[1:] - 1j*y]))
 
 solver.free()
 ```
+A simple example is given in `python/examples/simple.py`.
 
 ### MATLAB <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matlab/matlab-original.svg" height="20"/>
 ```matlab
@@ -91,7 +87,7 @@ If you find this repository useful, please consider giving it a star. If you
 wish to cite this work you may use the following BibTex:
 
 ```
-@article{Ced24,
+@article{Cederberg24,
 title = {Toeplitz covariance estimation with applications to MUSIC},
 journal = {Signal Processing},
 volume = {221},
