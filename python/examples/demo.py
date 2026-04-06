@@ -94,7 +94,7 @@ def main():
     plt.ylabel('MSE')
     plt.legend()
     plt.grid(True)
-    plt.savefig('demo.pdf')
+    plt.savefig('demo.png', dpi=150, bbox_inches='tight')
     
 
 if __name__ == "__main__":
