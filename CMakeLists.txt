@@ -20,6 +20,11 @@ else()
     find_package(BLAS REQUIRED)
     find_package(LAPACK REQUIRED)
     set(BLAS_LAPACK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+    # On Linux, OpenBLAS may put cblas.h in /usr/include/openblas/
+    find_path(OPENBLAS_INCLUDE_DIR cblas.h PATHS /usr/include/openblas /usr/include)
+    if(OPENBLAS_INCLUDE_DIR)
+        set(BLAS_INCLUDE_DIRS ${OPENBLAS_INCLUDE_DIR})
+    endif()
 endif()
 
 # --- FFTW3 ---
@@ -73,6 +78,7 @@ target_include_directories(nml
     PRIVATE
         ${CMAKE_SOURCE_DIR}/C/include
         ${FFTW3_INCLUDE_DIRS}
+        ${BLAS_INCLUDE_DIRS}
 )
 
 if(FFTW3_LIBRARY_DIRS)
