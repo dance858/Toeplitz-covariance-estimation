@@ -1,6 +1,6 @@
-"""DOA estimation utilities for the NML demo.
+"""DOA estimation utilities.
 
-Provides ULA data generation, Root-MUSIC estimation, and Cramér-Rao bounds.
+Provides ULA data generation, Root-MUSIC estimation, and Cramer-Rao bounds.
 Based on https://github.com/dance858/T-Rex-EM/tree/main/experiments/DOA.
 """
 import numpy as np
@@ -71,7 +71,6 @@ def root_music(R, k, d, wavelength):
     En = E[:, :-k]
     C = En @ En.conj().T
 
-    # Build polynomial coefficients from anti-diagonals of C
     coeff = np.zeros(m - 1, dtype=np.complex128)
     for i in range(1, m):
         coeff[i - 1] = np.sum(np.diag(C, i))
@@ -79,15 +78,12 @@ def root_music(R, k, d, wavelength):
 
     z = np.roots(coeff)
 
-    # Keep roots inside the unit circle
     mask = np.abs(z) < 1.0
     z = z[mask]
 
-    # Select k roots closest to the unit circle
     sorted_indices = np.argsort(1.0 - np.abs(z))
     z = z[sorted_indices[:k]]
 
-    # Convert roots to angles
     c = 2 * np.pi * d / wavelength
     sin_vals = np.angle(z) / c
     doa = np.sort(np.arcsin(np.clip(sin_vals, -1, 1)))
@@ -95,28 +91,7 @@ def root_music(R, k, d, wavelength):
 
 
 def u_crb(P, theta_rad, sig2, m, d, N):
-    """Unconditional (stochastic) Cramér-Rao bound for DOA estimation.
-
-    Parameters
-    ----------
-    P : ndarray, shape (k, k)
-        Source covariance matrix.
-    theta_rad : array_like
-        True DOAs in radians.
-    sig2 : float
-        Noise variance.
-    m : int
-        Number of sensors.
-    d : float
-        Sensor spacing in wavelengths.
-    N : int
-        Number of snapshots.
-
-    Returns
-    -------
-    CRB : ndarray, shape (k, k)
-        Cramér-Rao bound matrix for DOA parameters.
-    """
+    """Unconditional (stochastic) Cramer-Rao bound for DOA estimation."""
     theta_rad = np.asarray(theta_rad)
     sensor_idx = np.arange(m).reshape(-1, 1)
     A = np.exp(-2j * np.pi * d * sensor_idx * np.sin(theta_rad))
@@ -130,28 +105,7 @@ def u_crb(P, theta_rad, sig2, m, d, N):
 
 
 def s_crb(P, theta_rad, sig2, m, d, N):
-    """Conditional (deterministic) Cramér-Rao bound for DOA estimation.
-
-    Parameters
-    ----------
-    P : ndarray, shape (k, k)
-        Source covariance matrix.
-    theta_rad : array_like
-        True DOAs in radians.
-    sig2 : float
-        Noise variance.
-    m : int
-        Number of sensors.
-    d : float
-        Sensor spacing in wavelengths.
-    N : int
-        Number of snapshots.
-
-    Returns
-    -------
-    CRB : ndarray, shape (k, k)
-        Cramér-Rao bound matrix for DOA parameters.
-    """
+    """Conditional (deterministic) Cramer-Rao bound for DOA estimation."""
     theta_rad = np.asarray(theta_rad)
     k = len(theta_rad)
     p = np.diag(P)

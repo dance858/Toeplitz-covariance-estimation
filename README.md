@@ -1,5 +1,5 @@
 # Maximum likelihood Toeplitz covariance estimation
-This repository hosts an implementation of Newton's method for solving the maximum likelihood estimation problem for a covariance matrix that is known to be Toeplitz:
+This repository hosts an implementation of an FFT-accelerated Newton's method for solving the maximum likelihood estimation problem for a covariance matrix that is known to be Toeplitz:
 
 $$
 \begin{array}{r}

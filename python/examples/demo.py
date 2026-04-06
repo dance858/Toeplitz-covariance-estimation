@@ -8,7 +8,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import toeplitz
 from nml import NMLSolver
-from doa_utils import generate_ula_data, root_music, u_crb, s_crb
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "examples_paper"))
+from utils.doa_utils import generate_ula_data, root_music, u_crb, s_crb
 
 
 def main():
