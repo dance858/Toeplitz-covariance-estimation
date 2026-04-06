@@ -78,7 +78,7 @@ nml_free_solver(solver);
 
 ## Example
 
-Running `python/examples/demo.py` produces the following figure, which compares the mean-squared estimation error for MUSIC when using the sample covariance matrix (`MSE_SC`) versus the NML Toeplitz estimate (`MSE_NML`), as a function of the number of measurements $K$. The dotted lines show the unconditional and conditional Cramér-Rao bounds. For details we refer to Section 4 of our [paper](https://www.sciencedirect.com/science/article/pii/S0165168424001257).
+Running `python/examples/demo.py` produces the following figure, which compares the mean-squared estimation error for MUSIC when using the sample covariance matrix (`MSE_SC`) versus the NML Toeplitz estimate (`MSE_NML`), as a function of the number of measurements $K$. The dotted lines show the unconditional and conditional Cramér-Rao bounds. For details we refer to Section 4 of our [paper](https://www.sciencedirect.com/science/article/pii/S0165168424001257). On a Macbook M4 Pro, the average solve time is 80 microseconds.
 
 $\hspace{3.5cm}$ ![](https://github.com/dance858/Toeplitz-covariance-estimation/blob/main/python/examples/demo.png)
 
