@@ -35,7 +35,7 @@ venv/
 *.mat
 *.csv
 *.png
+!python/examples/demo.png
 *.jpg
-!demo.jpg
 *.gz
 *.bz2
