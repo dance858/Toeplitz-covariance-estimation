@@ -36,6 +36,5 @@ venv/
 *.csv
 *.png
 *.jpg
-!demo.jpg
 *.gz
 *.bz2

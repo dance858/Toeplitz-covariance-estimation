@@ -115,8 +115,15 @@ endif()
 
 # --- Python (scikit-build-core) ---
 if(SKBUILD)
-    set(BUILD_SHARED_LIBS ON)
-    install(TARGETS nml LIBRARY DESTINATION nml)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module NumPy)
+    python3_add_library(_nml MODULE python/nml/_bindings.c)
+    target_include_directories(_nml PRIVATE
+        ${CMAKE_SOURCE_DIR}/C
+        ${CMAKE_SOURCE_DIR}/C/include
+        ${FFTW3_INCLUDE_DIRS}
+    )
+    target_link_libraries(_nml PRIVATE nml Python3::NumPy)
+    install(TARGETS _nml DESTINATION nml)
 endif()
 
 # --- Optional: Tests ---

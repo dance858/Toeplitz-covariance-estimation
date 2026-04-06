@@ -1,0 +1,129 @@
+name: Build and publish
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish to PyPI (testpypi, pypi, or none)'
+        required: false
+        default: 'none'
+        type: choice
+        options:
+          - none
+          - testpypi
+          - pypi
+
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build_wheels:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14, windows-2022]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    env:
+      PYTHON_VERSION: ${{ matrix.python-version }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set Python subversion
+        shell: bash
+        run: |
+          echo "PYTHON_SUBVERSION=$(echo $PYTHON_VERSION | cut -c 3-)" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v3.3.0
+        env:
+          CIBW_BUILD: "cp3${{ env.PYTHON_SUBVERSION }}-*"
+          CIBW_SKIP: "*-win32 *-manylinux_i686 *-musllinux*"
+          CIBW_ARCHS_MACOS: "x86_64 universal2"
+          CIBW_ARCHS_LINUX: "auto aarch64"
+          CIBW_BEFORE_BUILD_LINUX: "yum install -y fftw-devel openblas-devel || apt-get install -y libfftw3-dev libopenblas-dev"
+          CIBW_BEFORE_BUILD_MACOS: "brew install fftw"
+          CIBW_BEFORE_BUILD_WINDOWS: "vcpkg install fftw3:x64-windows openblas:x64-windows"
+          CIBW_ENVIRONMENT_WINDOWS: "CMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Check wheels
+        shell: bash
+        run: |
+          pip install --upgrade twine
+          twine check wheelhouse/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.python-version }}
+          path: ./wheelhouse/*.whl
+
+  build_sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build sdist
+        run: pipx run build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: ./dist/*.tar.gz
+
+  upload_testpypi:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+    if: >-
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && (inputs.publish == 'testpypi' || inputs.publish == 'pypi'))
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "{wheels-*,sdist}"
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  upload_pypi:
+    needs: [upload_testpypi]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    if: >-
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.publish == 'pypi')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "{wheels-*,sdist}"
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
