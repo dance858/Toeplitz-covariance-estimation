@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "nml-toeplitz"
-version = "0.1.0"
+version = "0.1.1"
 description = "Newton Maximum Likelihood estimation of Toeplitz covariance matrices"
 readme = "README.md"
 license = {text = "MIT"}
